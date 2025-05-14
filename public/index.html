@@ -3,85 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celengan Digital Saya (PIN + QRIS Persisten)</title>
+    <title>Celengan Digital Saya (Gelap + QRIS Manual)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 
     <style>
-        /* Reset CSS Dasar */
+        /* Reset CSS Dasar & Tema Gelap */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Nunito Sans', sans-serif; background-color: #f0f4f8; color: #333; line-height: 1.6; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; padding-top: 80px; /* Ruang untuk nav fixed jika ada */ }
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #1a1a1a; /* Latar belakang gelap utama */
+            color: #e0e0e0;       /* Teks terang utama */
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            padding-top: 80px;
+        }
 
-        .auth-container, .dashboard-container { background-color: #ffffff; padding: 30px 40px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); width: 100%; }
+        .auth-container, .dashboard-container, .modal-content {
+            background-color: #2c2c2c; /* Latar belakang kontainer lebih terang dari body */
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); /* Bayangan lebih gelap */
+            width: 100%;
+            border: 1px solid #444; /* Border subtil */
+        }
         .auth-container { max-width: 450px; }
         .dashboard-container { max-width: 900px; margin: 0 auto; }
 
-        h1, h2, h3 { color: #2c3e50; margin-bottom: 20px; }
+        h1, h2, h3 { color: #ffffff; margin-bottom: 20px; } /* Teks heading putih */
         h1 { font-size: 28px; font-weight: 800; text-align: center; }
         h2 { font-size: 24px; font-weight: 700; }
-        .target-card h3 { font-size: 18px; font-weight: 700; text-align: left; color: #343a40; }
+        .target-card h3 { font-size: 18px; font-weight: 700; text-align: left; color: #f5f5f5; }
 
-        /* Form Styling */
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #555; }
+        /* Form Styling Tema Gelap */
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #b0b0b0; } /* Label lebih terang */
         .form-group input[type="text"],
         .form-group input[type="email"],
         .form-group input[type="password"],
         .form-group input[type="number"],
-        .form-group input[type="date"] { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease; }
-        .form-group input:focus { outline: none; border-color: #20c997; box-shadow: 0 0 0 2px rgba(32, 201, 151, 0.2); }
-        .form-text { text-align: center; margin-top: 20px; font-size: 14px; }
-        .form-text a { color: #20c997; text-decoration: none; font-weight: 600; }
+        .form-group input[type="date"] {
+            width: 100%; padding: 12px 15px;
+            background-color: #3a3a3a; /* Background input gelap */
+            color: #e0e0e0;           /* Teks input terang */
+            border: 1px solid #555;   /* Border input */
+            border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease;
+        }
+        .form-group input::placeholder { color: #888; }
+        .form-group input:focus { outline: none; border-color: #00acc1; /* Warna aksen terang untuk focus */ box-shadow: 0 0 0 2px rgba(0, 172, 193, 0.3); }
+        .form-text { text-align: center; margin-top: 20px; font-size: 14px; color: #a0a0a0; }
+        .form-text a { color: #00bcd4; /* Link lebih terang */ text-decoration: none; font-weight: 600; }
         .form-text a:hover { text-decoration: underline; }
 
-        /* Tombol */
+        /* Tombol Tema Gelap */
         .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; font-size: 16px; font-weight: 700; line-height: 1.5; text-align: center; text-decoration: none; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; }
         .btn-full-width { width: 100%; }
         .btn-sm { padding: 8px 16px; font-size: 14px; width: auto; }
         .btn i { margin-right: 8px; }
-        .btn-primary { background-color: #20c997; color: #ffffff; box-shadow: 0px 4px 12px rgba(32, 201, 151, 0.25); }
-        .btn-primary:hover { background-color: #1baa80; box-shadow: 0px 6px 15px rgba(32, 201, 151, 0.35); transform: translateY(-1px); }
-        .btn-primary:active { background-color: #179b73; box-shadow: 0px 2px 8px rgba(32, 201, 151, 0.2); transform: translateY(0); }
-        .btn-secondary { background-color: transparent; color: #20c997; border: 2px solid #20c997; }
-        .btn-secondary:hover { background-color: rgba(32, 201, 151, 0.1); color: #1baa80; border-color: #1baa80; }
-        .btn-success { background-color: #28a745; color: white; border: 2px solid #28a745; }
-        .btn-success:hover { background-color: #218838; border-color: #1e7e34; }
-        .btn-danger { background-color: #dc3545; color: white; border: 2px solid #dc3545; }
-        .btn-danger:hover { background-color: #c82333; border-color: #bd2130; }
-        .btn:disabled, .btn[disabled] { background-color: #e9ecef; color: #adb5bd; border-color: #e9ecef; box-shadow: none; cursor: not-allowed; transform: none; }
-        .btn-secondary:disabled, .btn-secondary[disabled] { background-color: transparent; color: #adb5bd; border-color: #adb5bd; }
+        .btn-primary { background-color: #00bcd4; /* Warna primer terang (cyan) */ color: #111; /* Teks gelap agar kontras */ box-shadow: 0px 4px 12px rgba(0, 188, 212, 0.3); }
+        .btn-primary:hover { background-color: #00acc1; box-shadow: 0px 6px 15px rgba(0, 188, 212, 0.4); transform: translateY(-1px); }
+        .btn-primary:active { background-color: #0097a7; box-shadow: 0px 2px 8px rgba(0, 188, 212, 0.25); transform: translateY(0); }
+        .btn-secondary { background-color: transparent; color: #00bcd4; border: 2px solid #00bcd4; }
+        .btn-secondary:hover { background-color: rgba(0, 188, 212, 0.1); color: #00acc1; border-color: #00acc1; }
+        .btn-success { background-color: #4CAF50; color: white; border: 2px solid #4CAF50; }
+        .btn-success:hover { background-color: #45a049; border-color: #3f8e43; }
+        .btn-danger { background-color: #f44336; color: white; border: 2px solid #f44336; }
+        .btn-danger:hover { background-color: #e53935; border-color: #d32f2f; }
+        .btn:disabled, .btn[disabled] { background-color: #424242; color: #757575; border-color: #424242; box-shadow: none; cursor: not-allowed; transform: none; }
+        .btn-secondary:disabled, .btn-secondary[disabled] { background-color: transparent; color: #757575; border-color: #757575; }
 
-        /* Dashboard */
+        /* Dashboard Tema Gelap */
         .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
-        .dashboard-header h2 { text-align: left; margin-bottom: 5px;}
-        #dashboardUserGreeting { font-size: 16px; font-weight: normal; color: #555; width: 100%; margin-bottom: 15px; }
+        .dashboard-header h2 { text-align: left; margin-bottom: 5px; color: #f5f5f5;}
+        #dashboardUserGreeting { font-size: 16px; font-weight: normal; color: #b0b0b0; width: 100%; margin-bottom: 15px; }
         .target-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .target-card { background-color: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #e9ecef; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
-        .target-info { font-size: 14px; color: #555; margin-bottom: 8px; } .target-info strong { color: #333; }
-        .progress-bar-container { width: 100%; background-color: #e9ecef; border-radius: 25px; height: 12px; margin-top: 10px; margin-bottom: 5px; overflow: hidden; }
-        .progress-bar { background-color: #20c997; height: 100%; border-radius: 25px; width: 0%; transition: width 0.5s ease-in-out; }
-        .progress-text { font-size: 12px; color: #555; text-align: right; margin-bottom: 15px; }
+        .target-card { background-color: #3a3a3a; /* Card lebih gelap */ padding: 20px; border-radius: 10px; border: 1px solid #555; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .target-info { font-size: 14px; color: #b0b0b0; margin-bottom: 8px; } .target-info strong { color: #e0e0e0; }
+        .progress-bar-container { width: 100%; background-color: #555; border-radius: 25px; height: 12px; margin-top: 10px; margin-bottom: 5px; overflow: hidden; }
+        .progress-bar { background-color: #00bcd4; /* Aksen terang */ height: 100%; border-radius: 25px; width: 0%; transition: width 0.5s ease-in-out; }
+        .progress-text { font-size: 12px; color: #a0a0a0; text-align: right; margin-bottom: 15px; }
         .target-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
 
-        /* Modal */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background-color: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 90%; max-width: 500px; position: relative; }
-        .modal-content h2 { text-align: center; }
-        .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 15px; right: 20px; }
-        .close-button:hover, .close-button:focus { color: #333; text-decoration: none; cursor: pointer; }
+        /* Modal Tema Gelap */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); /* Overlay lebih gelap */ justify-content: center; align-items: center; padding: 20px; }
+        /* .modal-content sudah diatur di atas */
+        .modal-content h2 { text-align: center; color: #f5f5f5; }
+        .close-button { color: #777; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 15px; right: 20px; }
+        .close-button:hover, .close-button:focus { color: #ccc; text-decoration: none; cursor: pointer; }
 
-        /* QRIS Modal Specific */
-        #qrisImageContainer { margin: 20px auto; width: 200px; height: 200px; border:1px solid #ccc; display:flex; justify-content:center; align-items:center; }
-        #qrisImageContainer img { max-width:100%; max-height:100%; }
-        #qrisStatusMessage { font-weight: bold; text-align: center; margin-top: 15px; }
+        /* QRIS Modal Specific Tema Gelap */
+        #staticQrisImage { max-width: 250px; max-height: 250px; margin: 15px auto; display: block; border: 1px solid #555; padding: 5px; background-color: white; /* QRIS biasanya butuh background putih agar terbaca */}
+        #qrisPaymentModal p { color: #b0b0b0; } #qrisPaymentModal strong { color: #e0e0e0; }
 
-        /* Navigasi */
-        .simple-nav { position: fixed; top: 0; left: 0; width: 100%; background: #ffffff; padding: 10px 20px; border-bottom: 1px solid #e0e0e0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 1001; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
-        .simple-nav button { background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background-color 0.2s ease; }
-        .simple-nav button:hover { background: #5a6268; }
+        /* Navigasi Tema Gelap */
+        .simple-nav { position: fixed; top: 0; left: 0; width: 100%; background: #2c2c2c; padding: 10px 20px; border-bottom: 1px solid #444; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 1001; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
+        .simple-nav button { background: #4a4a4a; color: #e0e0e0; border: 1px solid #555; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background-color 0.2s ease; }
+        .simple-nav button:hover { background: #5a5a5a; }
 
         .page-section { display: none; }
         .page-section.active { display: block; }
@@ -143,10 +165,10 @@
             <form id="qrisAmountForm">
                 <input type="hidden" id="qrisAmountTargetId">
                 <div class="form-group">
-                    <label for="qrisJumlahDeposit">Jumlah Deposit (Rp)</label>
+                    <label for="qrisJumlahDeposit">Jumlah yang Akan Anda Bayarkan (Rp)</label>
                     <input type="number" id="qrisJumlahDeposit" name="jumlah" step="1000" min="10000" required placeholder="Min. Rp 10.000">
                 </div>
-                <button type="submit" class="btn btn-success btn-full-width"> <i class="fas fa-qrcode"></i> Lanjut ke Pembayaran QRIS </button>
+                <button type="submit" class="btn btn-success btn-full-width"> <i class="fas fa-qrcode"></i> Tampilkan QRIS </button>
             </form>
         </div>
     </div>
@@ -154,25 +176,23 @@
     <div id="qrisPaymentModal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>Pembayaran QRIS - Target: <span id="qrisPaymentTargetName"></span></h2>
-            <p style="text-align: center;">Jumlah: <strong id="qrisPaymentAmount">Rp 0</strong></p>
-            <p style="text-align: center; font-size: 12px; margin-bottom:10px;">ID Referensi Internal: <code id="qrisPaymentRefId"></code></p>
-            <div id="qrisDisplayArea" style="text-align:center;">
-                <div id="qrisImageContainer">Memuat QR Code...</div>
-                <small>Scan QR Code ini dengan aplikasi e-wallet atau mobile banking Anda.</small>
-            </div>
-            <div id="qrisStatusMessage" style="margin-top:15px; text-align:center;">Status: MENUNGGU PEMBAYARAN</div>
-            <button id="btnCheckQrisStatus" class="btn btn-primary btn-full-width" style="margin-top:20px;"> <i class="fas fa-sync-alt"></i> Cek Status Pembayaran Manual </button>
+            <h2>Scan QRIS Ini Untuk Pembayaran</h2>
+            <p style="text-align: center;">Target: <strong id="qrisPaymentTargetNameDisplay"></strong></p>
+            <p style="text-align: center;">Anda akan membayar sejumlah: <strong id="qrisPaymentAmountDisplay">Rp 0</strong></p>
+            <img id="staticQrisImage" src="" alt="QRIS Pembayaran Statis">
+            <p style="text-align:center; margin-top:10px; font-size:14px;">Pastikan Anda mentransfer sesuai jumlah di atas.</p>
+            <button id="btnConfirmQrisPaid" class="btn btn-primary btn-full-width" style="margin-top:20px;"> <i class="fas fa-check-circle"></i> Saya Sudah Bayar </button>
+            <input type="hidden" id="qrisConfirmTargetId">
+            <input type="hidden" id="qrisConfirmAmount">
         </div>
     </div>
 
     <script>
         // --- Global Variables & Configuration ---
-        const API_BASE_URL = 'https://celengan.up.railway.app/api'; // GANTI DENGAN URL BACKEND ANDA YANG SUDAH DI-DEPLOY
+        const API_BASE_URL = 'https://celengan.up.railway.app/api'; // GANTI DENGAN URL BACKEND ANDA!
         let currentAuthToken = localStorage.getItem('celenganAuthToken');
         let currentUser = JSON.parse(localStorage.getItem('celenganCurrentUser'));
-        let qrisPollingIntervalId = null;
-        let currentQrisOurRefId = null;
+        let STATIC_QRIS_IMAGE_URL = ""; // Akan diisi dari API Config
 
         // --- Utility Functions ---
         async function apiCall(endpoint, method = 'GET', body = null, requiresAuth = true) {
@@ -194,12 +214,10 @@
                     return null;
                 }
                 let data;
-                try {
-                    data = await response.json();
-                } catch (e) {
+                try { data = await response.json(); }
+                catch (e) {
                     console.error('Error parsing JSON response:', e);
-                    const responseText = await response.text();
-                    console.error('Response text:', responseText);
+                    const responseText = await response.text(); console.error('Response text:', responseText);
                     showMessage(`Server memberikan respons yang tidak valid (bukan JSON). Status: ${response.status}. Isi: ${responseText.substring(0,100)}...`, 'error');
                     return null;
                 }
@@ -216,6 +234,24 @@
             }
         }
         function showMessage(message, type = 'info') { alert(`[${type.toUpperCase()}] ${message}`); console.log(`Message: [${type.toUpperCase()}] ${message}`); }
+
+        // --- Config Fetcher ---
+        async function fetchAppConfig() {
+            const configData = await apiCall('/transactions/config', 'GET', null, false); // Tidak perlu auth untuk config dasar
+            if (configData && configData.staticQrisImageUrl) {
+                STATIC_QRIS_IMAGE_URL = configData.staticQrisImageUrl;
+                const qrisImageElement = document.getElementById('staticQrisImage');
+                if (qrisImageElement) { // Jika modal sudah ada di DOM
+                     qrisImageElement.src = STATIC_QRIS_IMAGE_URL;
+                }
+            } else {
+                console.error("Gagal mengambil URL QRIS statis dari server atau URL tidak valid.");
+                showMessage("Konfigurasi pembayaran QRIS tidak lengkap. Harap hubungi admin.", "error");
+                // Sembunyikan tombol bayar QRIS jika config gagal
+                document.querySelectorAll('.btn-qris-deposit').forEach(btn => btn.style.display = 'none');
+            }
+        }
+
 
         // --- Authentication Functions ---
         async function handlePinLogin(event) {
@@ -234,8 +270,7 @@
                 document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
                 showPage('dashboardPage');
                 loadTargets();
-                resumeQrisPaymentAttempt();
-            }
+            } else { /* Pesan error sudah dihandle oleh apiCall */ }
             document.getElementById('loginPinForm').reset();
         }
         async function handlePinRegister(event) {
@@ -255,28 +290,24 @@
                 document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
                 showPage('dashboardPage');
                 loadTargets();
-                resumeQrisPaymentAttempt();
             } else if (data && data.id && !data.token) {
                 showMessage('Registrasi berhasil! Silakan login dengan PIN Anda.', 'success');
                 showPage('loginPinPage');
-            }
+            } else { /* Pesan error sudah dihandle oleh apiCall */ }
             document.getElementById('registerPinForm').reset();
         }
         function handleLogout(showMsg = true) {
             localStorage.removeItem('celenganAuthToken');
             localStorage.removeItem('celenganCurrentUser');
-            localStorage.removeItem('activeQrisPayment');
             currentAuthToken = null;
             currentUser = null;
-            if (qrisPollingIntervalId) clearInterval(qrisPollingIntervalId);
-            qrisPollingIntervalId = null;
-            currentQrisOurRefId = null;
             if (showMsg) showMessage('Anda telah berhasil logout.', 'info');
             showPage('loginPinPage');
         }
         async function checkAuthStatus() {
             const token = localStorage.getItem('celenganAuthToken');
             const user = JSON.parse(localStorage.getItem('celenganCurrentUser'));
+            await fetchAppConfig(); // Ambil config termasuk URL QRIS
             if (token && user) {
                 currentAuthToken = token;
                 currentUser = user;
@@ -287,7 +318,6 @@
                     document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
                     showPage('dashboardPage');
                     loadTargets();
-                    resumeQrisPaymentAttempt();
                 } else { handleLogout(false); }
             } else { showPage('loginPinPage'); }
         }
@@ -297,58 +327,28 @@
             const targetListContainer = document.getElementById('targetListContainer');
             const noTargetsText = document.getElementById('noTargetsText');
             if (!currentUser) { targetListContainer.innerHTML = '<p>Silakan login untuk melihat target.</p>'; noTargetsText.style.display = 'none'; return; }
-            
-            targetListContainer.innerHTML = '<p>Memuat target...</p>'; // Loading state
-            const response = await apiCall('/targets', 'GET'); // Backend /api/targets mengembalikan array langsung
-
-            if (response && Array.isArray(response)) { // PERBAIKAN: Langsung cek apakah response adalah array
+            targetListContainer.innerHTML = '<p style="color: #aaa;">Memuat target...</p>';
+            const response = await apiCall('/targets', 'GET');
+            if (response && Array.isArray(response)) {
                 targetListContainer.innerHTML = '';
-                if (response.length === 0) {
-                    noTargetsText.textContent = 'Anda belum memiliki target tabungan.';
-                    noTargetsText.style.display = 'block';
-                } else {
-                    noTargetsText.style.display = 'none';
-                    response.forEach(target => targetListContainer.appendChild(renderTargetCard(target)));
-                }
-            } else if (currentAuthToken) { // Hanya tampilkan error jika sudah login tapi gagal load
-                targetListContainer.innerHTML = '<p>Gagal memuat target atau format data dari server salah.</p>';
-                noTargetsText.style.display = 'none';
-            }
+                if (response.length === 0) { noTargetsText.textContent = 'Anda belum memiliki target tabungan.'; noTargetsText.style.display = 'block'; }
+                else { noTargetsText.style.display = 'none'; response.forEach(target => targetListContainer.appendChild(renderTargetCard(target))); }
+            } else if (currentAuthToken) { targetListContainer.innerHTML = '<p style="color: #aaa;">Gagal memuat target atau format data dari server salah.</p>'; noTargetsText.style.display = 'none'; }
         }
         function renderTargetCard(target) {
-            const card = document.createElement('div');
-            card.className = 'target-card';
-            card.setAttribute('data-target-id', target.id);
+            const card = document.createElement('div'); card.className = 'target-card'; card.setAttribute('data-target-id', target.id);
             const progress = target.jumlah_target > 0 ? Math.min((target.jumlah_terkumpul / target.jumlah_target) * 100, 100) : 0;
             const terkumpulFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(target.jumlah_terkumpul);
             const targetFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(target.jumlah_target);
             const tanggalTargetFormatted = target.tanggal_target ? new Date(target.tanggal_target).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Tidak ada';
-
-            card.innerHTML = `
-                <h3>${target.nama_target}</h3>
-                <div class="target-info">Target: <strong>${targetFormatted}</strong></div>
-                <div class="target-info">Terkumpul: <strong>${terkumpulFormatted}</strong></div>
-                <div class="target-info">Tanggal Target: <strong>${tanggalTargetFormatted}</strong></div>
-                <div class="target-info">Status: <strong style="text-transform:capitalize;">${target.status}</strong></div>
-                <div class="progress-bar-container"><div class="progress-bar" style="width: ${progress.toFixed(2)}%;"></div></div>
-                <div class="progress-text">${progress.toFixed(1)}%</div>
-                <div class="target-actions">
-                    ${target.status === 'aktif' ? `<button class="btn btn-success btn-sm btn-qris-deposit"><i class="fas fa-qrcode"></i> Bayar QRIS</button>` : ''}
-                    <button class="btn btn-secondary btn-sm btn-edit"><i class="fas fa-edit"></i> Edit</button>
-                    <button class="btn btn-danger btn-sm btn-delete"><i class="fas fa-trash"></i> Hapus</button>
-                </div>`;
-
-            const qrisDepositButton = card.querySelector('.btn-qris-deposit');
-            if (qrisDepositButton) {
-                qrisDepositButton.addEventListener('click', () => openQrisAmountModal(target.id, target.nama_target));
-            }
+            card.innerHTML = `<h3>${target.nama_target}</h3> <div class="target-info">Target: <strong>${targetFormatted}</strong></div> <div class="target-info">Terkumpul: <strong>${terkumpulFormatted}</strong></div> <div class="target-info">Tanggal Target: <strong>${tanggalTargetFormatted}</strong></div> <div class="target-info">Status: <strong style="text-transform:capitalize;">${target.status}</strong></div> <div class="progress-bar-container"><div class="progress-bar" style="width: ${progress.toFixed(2)}%;"></div></div> <div class="progress-text">${progress.toFixed(1)}%</div> <div class="target-actions"> ${target.status === 'aktif' ? `<button class="btn btn-success btn-sm btn-qris-deposit"><i class="fas fa-qrcode"></i> Bayar QRIS</button>` : ''} <button class="btn btn-secondary btn-sm btn-edit"><i class="fas fa-edit"></i> Edit</button> <button class="btn btn-danger btn-sm btn-delete"><i class="fas fa-trash"></i> Hapus</button> </div>`;
+            const qrisDepositButton = card.querySelector('.btn-qris-deposit'); if (qrisDepositButton) { qrisDepositButton.addEventListener('click', () => openQrisAmountModal(target.id, target.nama_target)); }
             card.querySelector('.btn-edit').addEventListener('click', () => openEditTargetModal(target.id));
             card.querySelector('.btn-delete').addEventListener('click', () => handleDeleteTarget(target.id, target.nama_target));
             return card;
         }
         async function handleTargetForm(event) {
-            event.preventDefault();
-            if (!currentUser) { showMessage("Anda harus login untuk melakukan aksi ini.", "error"); return; }
+            event.preventDefault(); if (!currentUser) { showMessage("Anda harus login.", "error"); return; }
             const targetId = document.getElementById('targetId').value;
             const nama_target = document.getElementById('namaTarget').value;
             const jumlah_target = document.getElementById('jumlahTarget').value;
@@ -356,19 +356,16 @@
             if (!nama_target || !jumlah_target || parseFloat(jumlah_target) <= 0) { showMessage('Nama target dan jumlah target (positif) harus diisi.', 'error'); return; }
             const payload = { nama_target, jumlah_target: parseFloat(jumlah_target), tanggal_target };
             let result;
-            if (targetId) { result = await apiCall(`/targets/${targetId}`, 'PUT', payload); }
-            else { result = await apiCall('/targets', 'POST', payload); }
-            // Asumsi API PUT/POST target mengembalikan objek target yang baru dibuat/diupdate atau pesan sukses
-            if (result && (result.id || result.nama_target || (result.message && result.message.toLowerCase().includes('berhasil')) ) ) {
+            if (targetId) { result = await apiCall(`/targets/${targetId}`, 'PUT', payload); } else { result = await apiCall('/targets', 'POST', payload); }
+            if (result && (result.id || result.nama_target || (result.message && result.message.toLowerCase().includes('berhasil')))) {
                 showMessage(targetId ? 'Target berhasil diperbarui!' : 'Target baru berhasil dibuat!', 'success');
-                closeModal('createTargetModal');
-                loadTargets();
+                closeModal('createTargetModal'); loadTargets();
             }
             document.getElementById('targetForm').reset();
         }
         async function openEditTargetModal(targetId) {
-            if (!currentUser) { showMessage("Anda harus login untuk melakukan aksi ini.", "error"); return; }
-            const target = await apiCall(`/targets/${targetId}`, 'GET'); // Asumsi API mengembalikan objek target langsung
+            if (!currentUser) { showMessage("Anda harus login.", "error"); return; }
+            const target = await apiCall(`/targets/${targetId}`, 'GET');
             if (target && target.id) {
                 document.getElementById('modalTitle').textContent = 'Edit Target Tabungan';
                 document.getElementById('targetId').value = target.id;
@@ -379,17 +376,14 @@
             }
         }
         async function handleDeleteTarget(targetId, targetName) {
-            if (!currentUser) { showMessage("Anda harus login untuk melakukan aksi ini.", "error"); return; }
+            if (!currentUser) { showMessage("Anda harus login.", "error"); return; }
             if (confirm(`Apakah Anda yakin ingin menghapus target "${targetName}"?`)) {
                 const result = await apiCall(`/targets/${targetId}`, 'DELETE');
-                if (result && result.message === 'Target removed') {
-                    showMessage('Target berhasil dihapus.', 'success');
-                    loadTargets();
-                }
+                if (result && result.message === 'Target removed') { showMessage('Target berhasil dihapus.', 'success'); loadTargets(); }
             }
         }
 
-        // --- QRIS Payment Functions ---
+        // --- QRIS Payment Functions (Simplified Flow) ---
         function openQrisAmountModal(targetId, targetName) {
             if (!currentUser) { showMessage("Anda harus login untuk melakukan deposit.", "error"); return; }
             document.getElementById('qrisAmountTargetId').value = targetId;
@@ -401,89 +395,37 @@
             event.preventDefault();
             const targetId = document.getElementById('qrisAmountTargetId').value;
             const amount = document.getElementById('qrisJumlahDeposit').value;
+            const targetName = document.getElementById('qrisAmountTargetName').textContent;
             if (!amount || parseFloat(amount) < 10000) { showMessage('Jumlah deposit minimal Rp 10.000.', 'error'); return; }
             closeModal('qrisAmountModal');
-            await startQrisPayment(targetId, amount);
-        }
-        async function startQrisPayment(targetId, amount, codeqr_value = null) {
-            showMessage('Memproses permintaan pembayaran QRIS...', 'info');
-            const payload = { target_id: parseInt(targetId), amount: parseFloat(amount) };
-            if (codeqr_value) payload.codeqr = codeqr_value;
-            const result = await apiCall('/transactions/qris/initiate', 'POST', payload);
-            if (result && result.qrData && result.ourTransactionRef) {
-                currentQrisOurRefId = result.ourTransactionRef;
-                const qrisPaymentData = {
-                    ourTransactionRef: result.ourTransactionRef,
-                    qrData: result.qrData,
-                    amount: parseFloat(amount),
-                    targetName: document.getElementById('qrisAmountTargetName').textContent,
-                    panzngenKeyorkut: result.keyorkut,
-                };
-                localStorage.setItem('activeQrisPayment', JSON.stringify(qrisPaymentData));
-                displayAndPollQrisModal(qrisPaymentData);
+            document.getElementById('qrisPaymentTargetNameDisplay').textContent = targetName;
+            document.getElementById('qrisPaymentAmountDisplay').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(amount)}`;
+            const qrisImageEl = document.getElementById('staticQrisImage');
+            if (STATIC_QRIS_IMAGE_URL && STATIC_QRIS_IMAGE_URL !== "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI") {
+                 qrisImageEl.src = STATIC_QRIS_IMAGE_URL;
+                 qrisImageEl.style.display = 'block';
+            } else {
+                qrisImageEl.style.display = 'none';
+                qrisImageEl.alt = "URL Gambar QRIS Statis belum dikonfigurasi dengan benar.";
+                showMessage("Gambar QRIS tidak dapat dimuat. Harap hubungi admin.", "error");
+                return; // Jangan buka modal jika URL QRIS tidak ada
             }
-        }
-        function displayAndPollQrisModal(paymentData) {
-            document.getElementById('qrisPaymentTargetName').textContent = paymentData.targetName;
-            document.getElementById('qrisPaymentAmount').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(paymentData.amount)}`;
-            document.getElementById('qrisPaymentRefId').textContent = paymentData.ourTransactionRef;
-            const qrContainer = document.getElementById('qrisImageContainer');
-            qrContainer.innerHTML = '';
-            try {
-                if (paymentData.qrData && paymentData.qrData.startsWith('http')) {
-                    qrContainer.innerHTML = `<img src="${paymentData.qrData}" alt="QR Code Pembayaran" style="max-width:100%; max-height:100%;">`;
-                } else if (paymentData.qrData && typeof QRCode !== 'undefined') {
-                    new QRCode(qrContainer, { text: paymentData.qrData, width: 180, height: 180, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
-                } else { qrContainer.textContent = "Data QR tidak dapat ditampilkan."; }
-            } catch(e) { console.error("Error membuat QRCode:", e); qrContainer.textContent = "Gagal menampilkan data QR."; }
-            document.getElementById('qrisStatusMessage').textContent = 'Status: MENUNGGU PEMBAYARAN';
-            document.getElementById('btnCheckQrisStatus').dataset.refId = paymentData.ourTransactionRef; // Simpan ref ID untuk tombol cek manual
+            document.getElementById('qrisConfirmTargetId').value = targetId;
+            document.getElementById('qrisConfirmAmount').value = amount;
             openModal('qrisPaymentModal');
-            startPollingQrisStatus(paymentData.ourTransactionRef);
         }
-        function resumeQrisPaymentAttempt() {
-            const persistedPaymentJson = localStorage.getItem('activeQrisPayment');
-            if (persistedPaymentJson && currentUser) { // Hanya resume jika user sudah login juga
-                try {
-                    const persistedPayment = JSON.parse(persistedPaymentJson);
-                    currentQrisOurRefId = persistedPayment.ourTransactionRef;
-                    showMessage('Melanjutkan sesi pembayaran QRIS yang tertunda...', 'info');
-                    displayAndPollQrisModal(persistedPayment);
-                } catch(e) { console.error("Gagal parse data QRIS dari localStorage:", e); localStorage.removeItem('activeQrisPayment'); }
-            }
-        }
-        function startPollingQrisStatus(ourTransactionRef) {
-            if (qrisPollingIntervalId) clearInterval(qrisPollingIntervalId);
-            qrisPollingIntervalId = setInterval(async () => {
-                if (document.getElementById('qrisPaymentModal').style.display === 'flex' && currentQrisOurRefId === ourTransactionRef) {
-                    await checkQrisPaymentStatus(ourTransactionRef, true);
-                } else {
-                    if (qrisPollingIntervalId) clearInterval(qrisPollingIntervalId);
-                    qrisPollingIntervalId = null;
-                }
-            }, 7000);
-        }
-        async function checkQrisPaymentStatus(ourTransactionRef, fromPolling = false) {
-            if (!ourTransactionRef) { console.warn("Mencoba cek status QRIS tanpa referensi ID."); return; }
-            if (!fromPolling) showMessage('Memeriksa status pembayaran...', 'info');
-            const result = await apiCall(`/transactions/qris/status/${ourTransactionRef}`, 'GET');
-            const statusMessageEl = document.getElementById('qrisStatusMessage');
-            if (result && statusMessageEl) {
-                statusMessageEl.textContent = `Status: ${result.status} - (${result.message || 'Sedang diproses'})`;
-                if (['SUCCESS', 'FAILED', 'EXPIRED'].includes(result.status)) {
-                    if (qrisPollingIntervalId) clearInterval(qrisPollingIntervalId);
-                    qrisPollingIntervalId = null;
-                    currentQrisOurRefId = null;
-                    localStorage.removeItem('activeQrisPayment');
-                    if (result.status === 'SUCCESS') {
-                        showMessage('Pembayaran berhasil dan deposit dicatat!', 'success');
-                        setTimeout(() => { closeModal('qrisPaymentModal'); loadTargets(); }, 2000);
-                    } else { showMessage(`Pembayaran ${result.status}. ${result.message || ''}.`, 'error'); }
-                } else if (result.status === 'PENDING' && !fromPolling) {
-                     showMessage('Pembayaran masih pending. Sistem akan otomatis mengecek.', 'info');
-                }
-            } else if (!fromPolling && statusMessageEl) {
-                 statusMessageEl.textContent = 'Gagal memeriksa status pembayaran.';
+        async function handleQrisUserConfirmation() {
+            if (!currentUser) { showMessage("Sesi tidak valid. Silakan login ulang.", "error"); return; }
+            const targetId = document.getElementById('qrisConfirmTargetId').value;
+            const amount = document.getElementById('qrisConfirmAmount').value;
+            if (!targetId || !amount) { showMessage("Informasi target atau jumlah tidak ditemukan.", "error"); return; }
+            showMessage('Memproses konfirmasi pembayaran Anda...', 'info');
+            const payload = { target_id: parseInt(targetId), amount: parseFloat(amount) };
+            const result = await apiCall('/transactions/qris/confirm-payment', 'POST', payload);
+            if (result && result.transactionDetails && result.transactionDetails.transaction_id) {
+                showMessage('Konfirmasi pembayaran berhasil! Saldo target telah diperbarui.', 'success');
+                closeModal('qrisPaymentModal');
+                loadTargets();
             }
         }
 
@@ -503,11 +445,6 @@
             const form = modal ? modal.querySelector('form') : null;
             if (form) { form.reset(); }
             if (modalId === 'createTargetModal') { document.getElementById('targetId').value = ''; }
-            if (modalId === 'qrisPaymentModal') {
-                if (qrisPollingIntervalId) clearInterval(qrisPollingIntervalId);
-                qrisPollingIntervalId = null;
-                // Jangan hapus currentQrisOurRefId atau localStorage di sini agar refresh bisa melanjutkan
-            }
         }
 
         // --- Page Navigation ---
@@ -522,14 +459,14 @@
                 if(navLogout) navLogout.style.display = 'inline-block';
                 if(navToRegister) navToRegister.style.display = 'none';
                 if(navToLogin) navToLogin.style.display = 'none';
-                const qrisModal = document.getElementById('qrisPaymentModal');
-                if (pageId !== 'dashboardPage' && (!qrisModal || qrisModal.style.display === 'none')) {
-                     if (document.getElementById('dashboardPage')) showPage('dashboardPage'); // Hanya jika dashboardPage ada
+                if (pageId !== 'dashboardPage' && document.getElementById('dashboardPage')) {
+                    const activeModal = document.querySelector('.modal[style*="display: flex"]');
+                    if (!activeModal) showPage('dashboardPage');
                 }
             } else {
                 if(navLogout) navLogout.style.display = 'none';
-                const qrisModal = document.getElementById('qrisPaymentModal');
-                if (qrisModal && qrisModal.style.display === 'flex') { closeModal('qrisPaymentModal'); }
+                const activeModal = document.querySelector('.modal[style*="display: flex"]');
+                if (activeModal) closeModal(activeModal.id);
                 if (pageId === 'loginPinPage') { if(navToRegister) navToRegister.style.display = 'inline-block'; if(navToLogin) navToLogin.style.display = 'none'; }
                 else if (pageId === 'registerPinPage') { if(navToRegister) navToRegister.style.display = 'none'; if(navToLogin) navToLogin.style.display = 'inline-block'; }
                 else { if(navToRegister) navToRegister.style.display = 'inline-block'; if(navToLogin) navToLogin.style.display = 'none'; if(document.getElementById('loginPinPage')) showPage('loginPinPage');}
@@ -538,33 +475,18 @@
 
         // --- Event Listeners Setup ---
         function setupEventListeners() {
-            const loginForm = document.getElementById('loginPinForm');
-            if(loginForm) loginForm.addEventListener('submit', handlePinLogin);
-            const registerForm = document.getElementById('registerPinForm');
-            if(registerForm) registerForm.addEventListener('submit', handlePinRegister);
-            const targetForm = document.getElementById('targetForm');
-            if(targetForm) targetForm.addEventListener('submit', handleTargetForm);
-            const qrisAmountForm = document.getElementById('qrisAmountForm');
-            if(qrisAmountForm) qrisAmountForm.addEventListener('submit', handleQrisAmountForm);
-
-            document.querySelectorAll('.modal .close-button').forEach(button => {
-                button.addEventListener('click', () => closeModal(button.closest('.modal').id));
-            });
-            window.addEventListener('click', (event) => {
-                document.querySelectorAll('.modal').forEach(modal => {
-                    if (event.target == modal) closeModal(modal.id);
-                });
-            });
-            const navLogoutButton = document.getElementById('navLogoutButton');
-            if(navLogoutButton) navLogoutButton.addEventListener('click', () => handleLogout());
-            const linkToRegister = document.getElementById('linkToRegisterPage');
-            if(linkToRegister) linkToRegister.addEventListener('click', (e) => { e.preventDefault(); showPage('registerPinPage'); });
-            const linkToLogin = document.getElementById('linkToLoginPage');
-            if(linkToLogin) linkToLogin.addEventListener('click', (e) => { e.preventDefault(); showPage('loginPinPage'); });
-            const navToRegisterButton = document.getElementById('navToRegisterButton');
-            if(navToRegisterButton) navToRegisterButton.addEventListener('click', () => showPage('registerPinPage'));
-            const navToLoginButton = document.getElementById('navToLoginButton');
-            if(navToLoginButton) navToLoginButton.addEventListener('click', () => showPage('loginPinPage'));
+            const loginForm = document.getElementById('loginPinForm'); if(loginForm) loginForm.addEventListener('submit', handlePinLogin);
+            const registerForm = document.getElementById('registerPinForm'); if(registerForm) registerForm.addEventListener('submit', handlePinRegister);
+            const targetForm = document.getElementById('targetForm'); if(targetForm) targetForm.addEventListener('submit', handleTargetForm);
+            const qrisAmountForm = document.getElementById('qrisAmountForm'); if(qrisAmountForm) qrisAmountForm.addEventListener('submit', handleQrisAmountForm);
+            const btnConfirmQrisPaid = document.getElementById('btnConfirmQrisPaid'); if(btnConfirmQrisPaid) btnConfirmQrisPaid.addEventListener('click', handleQrisUserConfirmation);
+            document.querySelectorAll('.modal .close-button').forEach(button => button.addEventListener('click', () => closeModal(button.closest('.modal').id)));
+            window.addEventListener('click', (event) => { document.querySelectorAll('.modal').forEach(modal => { if (event.target == modal) closeModal(modal.id); }); });
+            const navLogoutButton = document.getElementById('navLogoutButton'); if(navLogoutButton) navLogoutButton.addEventListener('click', () => handleLogout());
+            const linkToRegister = document.getElementById('linkToRegisterPage'); if(linkToRegister) linkToRegister.addEventListener('click', (e) => { e.preventDefault(); showPage('registerPinPage'); });
+            const linkToLogin = document.getElementById('linkToLoginPage'); if(linkToLogin) linkToLogin.addEventListener('click', (e) => { e.preventDefault(); showPage('loginPinPage'); });
+            const navToRegisterButton = document.getElementById('navToRegisterButton'); if(navToRegisterButton) navToRegisterButton.addEventListener('click', () => showPage('registerPinPage'));
+            const navToLoginButton = document.getElementById('navToLoginButton'); if(navToLoginButton) navToLoginButton.addEventListener('click', () => showPage('loginPinPage'));
             const btnOpenCreateTargetModal = document.getElementById('btnOpenCreateTargetModal');
             if(btnOpenCreateTargetModal) {
                 btnOpenCreateTargetModal.addEventListener('click', () => {
@@ -572,22 +494,15 @@
                     openModal('createTargetModal');
                 });
             }
-            const btnCheckQrisStatus = document.getElementById('btnCheckQrisStatus');
-            if(btnCheckQrisStatus) {
-                btnCheckQrisStatus.addEventListener('click', () => {
-                    const refId = currentQrisOurRefId || btnCheckQrisStatus.dataset.refId;
-                    if (refId) { checkQrisPaymentStatus(refId); }
-                    else { showMessage("Tidak ada referensi pembayaran untuk dicek.", "warning"); }
-                });
-            }
         }
 
         // Panggil saat DOM sudah siap
         document.addEventListener('DOMContentLoaded', () => {
             setupEventListeners();
-            checkAuthStatus(); // Ini akan memanggil resumeQrisPaymentAttempt jika user sudah login & ada sesi QRIS
+            checkAuthStatus(); // Ini akan memanggil fetchAppConfig dan menentukan halaman awal
         });
 
     </script>
 </body>
 </html>
+
