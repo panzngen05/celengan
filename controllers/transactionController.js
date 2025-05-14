@@ -9,8 +9,7 @@ const { confirmTargetDeposit } = require('../services/paymentService'); // Pasti
 // @route   GET /api/transactions
 // @access  Private (requires JWT)
 const getUserTransactions = async (req, res) => {
-    const user_id = req.user.id; // Diambil dari middleware 'protect' (JWT)
-
+    const user_id = req.user.id;
     const { target_id, jenis_transaksi, start_date, end_date } = req.query;
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
@@ -18,48 +17,20 @@ const getUserTransactions = async (req, res) => {
 
     let query = `
         SELECT 
-            t.id, 
-            t.target_id, 
-            tg.nama_target, 
-            t.jenis_transaksi, 
-            t.jumlah, 
-            t.deskripsi, 
-            t.tanggal_transaksi, 
-            t.payment_gateway_ref 
+            t.id, t.target_id, tg.nama_target, t.jenis_transaksi, t.jumlah, 
+            t.deskripsi, t.tanggal_transaksi, t.payment_gateway_ref 
         FROM transactions t 
         JOIN targets tg ON t.target_id = tg.id 
-        WHERE t.user_id = ?
-    `;
+        WHERE t.user_id = ?`;
     const queryParams = [user_id];
     
     let countQuery = 'SELECT COUNT(*) AS total_records FROM transactions t WHERE t.user_id = ?';
     const countQueryParams = [user_id];
 
-    // Tambahkan filter jika ada
-    if (target_id) {
-        query += ' AND t.target_id = ?';
-        queryParams.push(target_id);
-        countQuery += ' AND t.target_id = ?';
-        countQueryParams.push(target_id);
-    }
-    if (jenis_transaksi) {
-        query += ' AND t.jenis_transaksi = ?';
-        queryParams.push(jenis_transaksi);
-        countQuery += ' AND t.jenis_transaksi = ?';
-        countQueryParams.push(jenis_transaksi);
-    }
-    if (start_date) {
-        query += ' AND DATE(t.tanggal_transaksi) >= ?';
-        queryParams.push(start_date);
-        countQuery += ' AND DATE(t.tanggal_transaksi) >= ?';
-        countQueryParams.push(start_date);
-    }
-    if (end_date) {
-        query += ' AND DATE(t.tanggal_transaksi) <= ?';
-        queryParams.push(end_date);
-        countQuery += ' AND DATE(t.tanggal_transaksi) <= ?';
-        countQueryParams.push(end_date);
-    }
+    if (target_id) { query += ' AND t.target_id = ?'; queryParams.push(target_id); countQuery += ' AND t.target_id = ?'; countQueryParams.push(target_id); }
+    if (jenis_transaksi) { query += ' AND t.jenis_transaksi = ?'; queryParams.push(jenis_transaksi); countQuery += ' AND t.jenis_transaksi = ?'; countQueryParams.push(jenis_transaksi); }
+    if (start_date) { query += ' AND DATE(t.tanggal_transaksi) >= ?'; queryParams.push(start_date); countQuery += ' AND DATE(t.tanggal_transaksi) >= ?'; countQueryParams.push(start_date); }
+    if (end_date) { query += ' AND DATE(t.tanggal_transaksi) <= ?'; queryParams.push(end_date); countQuery += ' AND DATE(t.tanggal_transaksi) <= ?'; countQueryParams.push(end_date); }
 
     query += ' ORDER BY t.tanggal_transaksi DESC LIMIT ? OFFSET ?';
     queryParams.push(limit, offset);
@@ -68,12 +39,10 @@ const getUserTransactions = async (req, res) => {
         const [transactions] = await pool.query(query, queryParams);
         const [totalResult] = await pool.query(countQuery, countQueryParams);
         
-        let total_records = 0; // Default ke 0
-        // Pengecekan defensif untuk totalResult
+        let total_records = 0;
         if (totalResult && totalResult.length > 0 && totalResult[0] && totalResult[0].total_records !== undefined) {
-            total_records = parseInt(totalResult[0].total_records, 10); // Pastikan itu angka
+            total_records = parseInt(totalResult[0].total_records, 10);
         } else {
-            // Ini seharusnya tidak sering terjadi untuk query COUNT(*), tapi sebagai jaga-jaga
             console.warn("Query COUNT untuk transaksi tidak mengembalikan hasil yang diharapkan atau total_records undefined:", totalResult);
         }
         
@@ -82,23 +51,15 @@ const getUserTransactions = async (req, res) => {
         res.json({
             message: 'Riwayat transaksi berhasil diambil.',
             data: transactions,
-            pagination: {
-                page: page,
-                limit: limit,
-                total_records: total_records,
-                total_pages: total_pages,
-                has_next_page: page < total_pages,
-                has_prev_page: page > 1
-            }
+            pagination: { page, limit, total_records, total_pages, has_next_page: page < total_pages, has_prev_page: page > 1 }
         });
     } catch (error) {
-        console.error('Error saat mengambil riwayat transaksi:', error); // LOG ERROR DETAIL DI SINI
-        // Sesuaikan pesan error di bawah ini jika Anda ingin pesan yang lebih spesifik muncul di frontend
+        console.error('Error saat mengambil riwayat transaksi:', error);
         res.status(500).json({ message: 'Gagal mengambil data transaksi dari server.' }); 
     }
 };
 
-// @desc    Make a manual deposit (misalnya admin confirmation, bukan via payment gateway otomatis)
+// @desc    Make a manual deposit
 // @route   POST /api/transactions/deposit-manual
 // @access  Private
 const makeManualDeposit = async (req, res) => {
@@ -114,7 +75,6 @@ const makeManualDeposit = async (req, res) => {
         const result = await confirmTargetDeposit(user_id, parseInt(target_id), parseFloat(jumlah), deskripsi || 'Deposit manual', paymentRef);
         res.status(201).json(result);
     } catch (error) {
-        // confirmTargetDeposit sudah melakukan console.error
         res.status(500).json({ message: error.message || 'Server error processing manual deposit' });
     }
 };
@@ -137,7 +97,7 @@ const initiateQrisPayment = async (req, res) => {
     const panzngenMerchantQrPayload = process.env.PANZNGEN_MERCHANT_QR_PAYLOAD;
 
     if (!panzngenCreateUrl || !panzngenApiKey || !panzngenMerchantQrPayload) {
-        console.error("Konfigurasi PanzNGen API (URL, API Key, atau QR Payload) tidak lengkap di .env");
+        console.error("KRITIKAL: Konfigurasi PanzNGen API (URL, API Key, atau QR Payload) tidak lengkap di .env");
         return res.status(500).json({ message: "Layanan pembayaran QRIS tidak terkonfigurasi dengan benar." });
     }
 
@@ -148,13 +108,29 @@ const initiateQrisPayment = async (req, res) => {
             codeqr: panzngenMerchantQrPayload,
         };
 
-        console.log(`Memanggil PanzNGen Create Payment: URL=${panzngenCreateUrl}, Params=`, params);
+        console.log(`[QRIS INITIATE] Memanggil PanzNGen Create Payment: URL=${panzngenCreateUrl}, Params=`, JSON.stringify(params));
         const panzngenResponse = await axios.get(panzngenCreateUrl, { params });
-        console.log("Respons dari PanzNGen Create Payment:", JSON.stringify(panzngenResponse.data, null, 2));
+        
+        // --- LOGGING PENTING UNTUK MELIHAT RESPONS PANZNGEN ---
+        console.log("[QRIS INITIATE] Respons MENTAH dari PanzNGen /createpayment:", JSON.stringify(panzngenResponse.data, null, 2));
+        // ---------------------------------------------------------
 
-        if (panzngenResponse.data && panzngenResponse.data.status === true && panzngenResponse.data.result && panzngenResponse.data.result.transactionId) {
-            const panzngenTransactionId = panzngenResponse.data.result.transactionId;
-            const qrDataForDisplay = panzngenResponse.data.result.qrImageUrl;
+        const pData = panzngenResponse.data;
+
+        // Sesuaikan kondisi ini berdasarkan struktur respons PASTI dari PanzNgen
+        if (pData && pData.status === true && pData.result && pData.result.transactionId) {
+            
+            const panzngenTransactionId = pData.result.transactionId; // Ini yang kita ASUMSIKAN sebagai keyorkut untuk Decode Rerezz
+            const qrDataForDisplay = pData.result.qrImageUrl;          // URL Gambar QR untuk ditampilkan
+
+            console.log(`[QRIS INITIATE] PanzNgen Transaction ID (akan disimpan sbg panzngen_keyorkut): ${panzngenTransactionId}`);
+            console.log(`[QRIS INITIATE] PanzNgen QR Image URL (akan disimpan sbg panzngen_payment_data): ${qrDataForDisplay}`);
+
+            // Periksa apakah ada field lain di pData.result yang mungkin lebih cocok sebagai keyorkut untuk Decode Rerezz
+            // Misalnya, jika PanzNgen mengembalikan field bernama `externalKey` atau `paymentReferenceForStatusCheck`
+            Object.keys(pData.result).forEach(key => {
+                console.log(`[QRIS INITIATE] PanzNgen pData.result.${key} = ${pData.result[key]}`);
+            });
 
             await pool.query(
                 'INSERT INTO qris_payment_attempts (user_id, target_id, amount, panzngen_keyorkut, panzngen_payment_data, status, our_transaction_ref) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -164,19 +140,19 @@ const initiateQrisPayment = async (req, res) => {
             res.status(201).json({
                 message: 'Permintaan pembayaran QRIS berhasil dibuat. Silakan selesaikan pembayaran.',
                 ourTransactionRef: ourTransactionRef,
-                keyorkut: panzngenTransactionId,
-                qrData: qrDataForDisplay,
-                paymentDetails: panzngenResponse.data.result
+                keyorkut: panzngenTransactionId, // Ini adalah transactionId dari PanzNgen
+                qrData: qrDataForDisplay,      // Ini adalah qrImageUrl dari PanzNgen
+                paymentDetails: pData.result   // Seluruh objek result dari PanzNgen
             });
         } else {
-            const panzngenErrorMessage = panzngenResponse.data ? (panzngenResponse.data.message || JSON.stringify(panzngenResponse.data)) : 'Respons tidak dikenal dari PanzNGen.';
-            console.error("PanzNGen mengembalikan error atau format tidak dikenal:", panzngenErrorMessage);
+            const panzngenErrorMessage = pData ? (pData.message || JSON.stringify(pData)) : 'Respons tidak dikenal atau format tidak sesuai dari PanzNGen.';
+            console.error("[QRIS INITIATE] PanzNGen mengembalikan error atau format tidak dikenal:", panzngenErrorMessage);
             throw new Error(`Gagal membuat pembayaran QRIS di PanzNGen: ${panzngenErrorMessage}`);
         }
 
     } catch (error) {
         const errorDetails = error.response ? JSON.stringify(error.response.data) : error.message;
-        console.error('Error saat inisiasi pembayaran QRIS:', errorDetails);
+        console.error('[QRIS INITIATE] Error saat proses inisiasi pembayaran QRIS:', errorDetails);
         
         let clientErrorMessage = 'Gagal memproses permintaan pembayaran QRIS.';
         if (error.message && error.message.startsWith('Gagal membuat pembayaran QRIS di PanzNGen:')) {
@@ -201,7 +177,7 @@ const checkQrisPaymentStatus = async (req, res) => {
     const decodeMemid = process.env.DECODE_REREZZ_MEMID;
 
     if (!decodeStatusUrl || !decodeApiKey || !decodeMemid) {
-        console.error("Konfigurasi API Decode Rerezz (URL, API Key, atau MEMID) tidak lengkap di .env");
+        console.error("KRITIKAL: Konfigurasi API Decode Rerezz (URL, API Key, atau MEMID) tidak lengkap di .env");
         return res.status(500).json({ message: "Layanan pengecekan status pembayaran tidak terkonfigurasi." });
     }
 
@@ -216,31 +192,39 @@ const checkQrisPaymentStatus = async (req, res) => {
         }
         const attempt = attempts[0];
 
-        if (attempt.status === 'SUCCESS' || attempt.status === 'FAILED' || attempt.status === 'EXPIRED') {
+        if (['SUCCESS', 'FAILED', 'EXPIRED'].includes(attempt.status)) {
             return res.json({ message: `Status pembayaran adalah ${attempt.status}.`, status: attempt.status, ourTransactionRef: attempt.our_transaction_ref, amount: attempt.amount });
         }
 
         if (!attempt.panzngen_keyorkut) {
-             return res.status(400).json({ message: 'Data pembayaran tidak lengkap (keyorkut dari PanzNGen hilang).' });
+             return res.status(400).json({ message: 'Data pembayaran tidak lengkap (keyorkut dari PanzNGen hilang untuk referensi ini).' });
         }
 
         const params = {
             memid: decodeMemid,
-            keyorkut: attempt.panzngen_keyorkut,
+            keyorkut: attempt.panzngen_keyorkut, // Menggunakan ID yang disimpan dari PanzNgen
             apikey: decodeApiKey,
         };
         
-        console.log(`Memanggil Decode Rerezz Cek Status: URL=${decodeStatusUrl}, Params=`, params);
+        console.log(`[QRIS STATUS] Memanggil Decode Rerezz Cek Status: URL=${decodeStatusUrl}, Params=`, JSON.stringify(params));
         const statusResponse = await axios.get(decodeStatusUrl, { params });
-        console.log("Respons dari Decode Rerezz Cek Status:", JSON.stringify(statusResponse.data, null, 2));
+        console.log("[QRIS STATUS] Respons MENTAH dari Decode Rerezz /cekstatus:", JSON.stringify(statusResponse.data, null, 2));
 
-        let paymentStatus = 'PENDING';
-        if (statusResponse.data && (statusResponse.data.status === 200 || statusResponse.data.success === true || typeof statusResponse.data.status === 'boolean' && statusResponse.data.status) && statusResponse.data.data && statusResponse.data.data.status_transaksi) {
-            paymentStatus = statusResponse.data.data.status_transaksi.toUpperCase();
-        } else if (statusResponse.data && statusResponse.data.message) {
-            console.warn("Pesan/error dari Decode Rerezz saat cek status:", statusResponse.data.message);
+        let paymentStatus = 'PENDING'; // Default
+        const rData = statusResponse.data;
+
+        // Sesuaikan kondisi ini dengan struktur respons PASTI dari Decode Rerezz
+        if (rData && (rData.status === 200 || rData.success === true || (typeof rData.status === 'boolean' && rData.status)) && rData.data && rData.data.status_transaksi) {
+            paymentStatus = rData.data.status_transaksi.toUpperCase();
+        } else if (rData && rData.message) {
+            // Jika Decode Rerezz mengirim pesan error yang spesifik, catat itu.
+            console.warn("[QRIS STATUS] Pesan/error dari Decode Rerezz saat cek status:", rData.message);
+            // Jika pesan errornya "Gagal mengambil data transaksi", mungkin `keyorkut` yang kita kirim tidak valid di sisi mereka.
+            if (rData.message.toLowerCase().includes("gagal mengambil data transaksi")) {
+                paymentStatus = 'FAILED'; // Anggap gagal jika mereka tidak bisa menemukan datanya
+            }
         } else {
-            console.warn("Format respons tidak dikenal dari Decode Rerezz Cek Status.");
+            console.warn("[QRIS STATUS] Format respons tidak dikenal dari Decode Rerezz Cek Status.");
         }
 
         await pool.query(
@@ -249,7 +233,7 @@ const checkQrisPaymentStatus = async (req, res) => {
         );
 
         if (paymentStatus === 'SUCCESS') {
-            const depositDescription = `QRIS Deposit (Ref: ${attempt.our_transaction_ref})`;
+            const depositDescription = `QRIS Deposit (Ref: ${attempt.our_transaction_ref}, PanzNgenKey: ${attempt.panzngen_keyorkut})`;
             await confirmTargetDeposit(attempt.user_id, attempt.target_id, attempt.amount, depositDescription, attempt.our_transaction_ref);
             return res.json({ message: 'Pembayaran QRIS berhasil dan deposit telah dicatat!', status: paymentStatus, ourTransactionRef: attempt.our_transaction_ref, amount: attempt.amount });
         } else {
@@ -258,7 +242,7 @@ const checkQrisPaymentStatus = async (req, res) => {
 
     } catch (error) {
         const errorDetails = error.response ? JSON.stringify(error.response.data) : error.message;
-        console.error('Error saat cek status pembayaran QRIS:', errorDetails);
+        console.error('[QRIS STATUS] Error saat cek status pembayaran QRIS:', errorDetails);
         const errorMessage = (error.response && error.response.data && error.response.data.message)
                            ? error.response.data.message
                            : error.message || 'Gagal memeriksa status pembayaran QRIS.';
@@ -268,7 +252,7 @@ const checkQrisPaymentStatus = async (req, res) => {
 
 module.exports = {
     makeManualDeposit,
-    getUserTransactions,    // Termasuk fungsi yang diperbarui
+    getUserTransactions,
     initiateQrisPayment,
     checkQrisPaymentStatus,
 };
