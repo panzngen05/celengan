@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celengan Digital Saya (Gelap + QRIS Manual)</title>
+    <title>Celengan Digital Saya (Gelap + QRIS Manual + Fixes)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
     <style>
         /* Reset CSS Dasar & Tema Gelap */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -22,7 +21,7 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            padding-top: 80px;
+            padding-top: 80px; /* Ruang untuk nav fixed jika ada */
         }
 
         .auth-container, .dashboard-container, .modal-content {
@@ -42,22 +41,22 @@
         .target-card h3 { font-size: 18px; font-weight: 700; text-align: left; color: #f5f5f5; }
 
         /* Form Styling Tema Gelap */
-        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #b0b0b0; } /* Label lebih terang */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #b0b0b0; }
         .form-group input[type="text"],
         .form-group input[type="email"],
         .form-group input[type="password"],
         .form-group input[type="number"],
         .form-group input[type="date"] {
             width: 100%; padding: 12px 15px;
-            background-color: #3a3a3a; /* Background input gelap */
-            color: #e0e0e0;           /* Teks input terang */
-            border: 1px solid #555;   /* Border input */
-            border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease;
+            background-color: #3a3a3a; color: #e0e0e0;
+            border: 1px solid #555; border-radius: 8px; font-size: 16px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
         .form-group input::placeholder { color: #888; }
-        .form-group input:focus { outline: none; border-color: #00acc1; /* Warna aksen terang untuk focus */ box-shadow: 0 0 0 2px rgba(0, 172, 193, 0.3); }
+        .form-group input:focus { outline: none; border-color: #00acc1; box-shadow: 0 0 0 2px rgba(0, 172, 193, 0.3); }
         .form-text { text-align: center; margin-top: 20px; font-size: 14px; color: #a0a0a0; }
-        .form-text a { color: #00bcd4; /* Link lebih terang */ text-decoration: none; font-weight: 600; }
+        .form-text a { color: #00bcd4; text-decoration: none; font-weight: 600; }
         .form-text a:hover { text-decoration: underline; }
 
         /* Tombol Tema Gelap */
@@ -65,16 +64,16 @@
         .btn-full-width { width: 100%; }
         .btn-sm { padding: 8px 16px; font-size: 14px; width: auto; }
         .btn i { margin-right: 8px; }
-        .btn-primary { background-color: #00bcd4; /* Warna primer terang (cyan) */ color: #111; /* Teks gelap agar kontras */ box-shadow: 0px 4px 12px rgba(0, 188, 212, 0.3); }
+        .btn-primary { background-color: #00bcd4; color: #111; box-shadow: 0px 4px 12px rgba(0, 188, 212, 0.3); }
         .btn-primary:hover { background-color: #00acc1; box-shadow: 0px 6px 15px rgba(0, 188, 212, 0.4); transform: translateY(-1px); }
         .btn-primary:active { background-color: #0097a7; box-shadow: 0px 2px 8px rgba(0, 188, 212, 0.25); transform: translateY(0); }
         .btn-secondary { background-color: transparent; color: #00bcd4; border: 2px solid #00bcd4; }
         .btn-secondary:hover { background-color: rgba(0, 188, 212, 0.1); color: #00acc1; border-color: #00acc1; }
-        .btn-success { background-color: #4CAF50; color: white; border: 2px solid #4CAF50; }
-        .btn-success:hover { background-color: #45a049; border-color: #3f8e43; }
-        .btn-danger { background-color: #f44336; color: white; border: 2px solid #f44336; }
-        .btn-danger:hover { background-color: #e53935; border-color: #d32f2f; }
-        .btn:disabled, .btn[disabled] { background-color: #424242; color: #757575; border-color: #424242; box-shadow: none; cursor: not-allowed; transform: none; }
+        .btn-success { background-color: #4CAF50; color: white; /* border: 2px solid #4CAF50; */ }
+        .btn-success:hover { background-color: #45a049; /* border-color: #3f8e43; */ }
+        .btn-danger { background-color: #f44336; color: white; /* border: 2px solid #f44336; */ }
+        .btn-danger:hover { background-color: #e53935; /* border-color: #d32f2f; */ }
+        .btn:disabled, .btn[disabled] { background-color: #424242; color: #757575; border-color: #424242 !important; box-shadow: none; cursor: not-allowed; transform: none; }
         .btn-secondary:disabled, .btn-secondary[disabled] { background-color: transparent; color: #757575; border-color: #757575; }
 
         /* Dashboard Tema Gelap */
@@ -82,22 +81,23 @@
         .dashboard-header h2 { text-align: left; margin-bottom: 5px; color: #f5f5f5;}
         #dashboardUserGreeting { font-size: 16px; font-weight: normal; color: #b0b0b0; width: 100%; margin-bottom: 15px; }
         .target-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .target-card { background-color: #3a3a3a; /* Card lebih gelap */ padding: 20px; border-radius: 10px; border: 1px solid #555; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .target-card { background-color: #3a3a3a; padding: 20px; border-radius: 10px; border: 1px solid #555; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         .target-info { font-size: 14px; color: #b0b0b0; margin-bottom: 8px; } .target-info strong { color: #e0e0e0; }
         .progress-bar-container { width: 100%; background-color: #555; border-radius: 25px; height: 12px; margin-top: 10px; margin-bottom: 5px; overflow: hidden; }
-        .progress-bar { background-color: #00bcd4; /* Aksen terang */ height: 100%; border-radius: 25px; width: 0%; transition: width 0.5s ease-in-out; }
+        .progress-bar { background-color: #00bcd4; height: 100%; border-radius: 25px; width: 0%; transition: width 0.5s ease-in-out; }
         .progress-text { font-size: 12px; color: #a0a0a0; text-align: right; margin-bottom: 15px; }
         .target-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .target-actions .btn { margin-bottom: 8px; /* Spasi jika tombol wrap */ }
+
 
         /* Modal Tema Gelap */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); /* Overlay lebih gelap */ justify-content: center; align-items: center; padding: 20px; }
-        /* .modal-content sudah diatur di atas */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; padding: 20px; }
         .modal-content h2 { text-align: center; color: #f5f5f5; }
         .close-button { color: #777; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 15px; right: 20px; }
         .close-button:hover, .close-button:focus { color: #ccc; text-decoration: none; cursor: pointer; }
 
         /* QRIS Modal Specific Tema Gelap */
-        #staticQrisImage { max-width: 250px; max-height: 250px; margin: 15px auto; display: block; border: 1px solid #555; padding: 5px; background-color: white; /* QRIS biasanya butuh background putih agar terbaca */}
+        #staticQrisImage { max-width: 250px; max-height: 250px; margin: 15px auto; display: block; border: 1px solid #555; padding: 5px; background-color: white; }
         #qrisPaymentModal p { color: #b0b0b0; } #qrisPaymentModal strong { color: #e0e0e0; }
 
         /* Navigasi Tema Gelap */
@@ -189,7 +189,7 @@
 
     <script>
         // --- Global Variables & Configuration ---
-        const API_BASE_URL = 'https://celengan.up.railway.app/api'; // GANTI DENGAN URL BACKEND ANDA!
+        const API_BASE_URL = 'https://celengan.up.railway.app/api'; // GANTI DENGAN URL BACKEND ANDA YANG SUDAH DI-DEPLOY!
         let currentAuthToken = localStorage.getItem('celenganAuthToken');
         let currentUser = JSON.parse(localStorage.getItem('celenganCurrentUser'));
         let STATIC_QRIS_IMAGE_URL = ""; // Akan diisi dari API Config
@@ -237,13 +237,16 @@
 
         // --- Config Fetcher ---
         async function fetchAppConfig() {
-            const configData = await apiCall('/transactions/config', 'GET', null, false); // Tidak perlu auth untuk config dasar
+            // Menggunakan /api/transactions/config seperti yang dibuat di backend
+            const configData = await apiCall('/transactions/config', 'GET', null, false);
             if (configData && configData.staticQrisImageUrl) {
                 STATIC_QRIS_IMAGE_URL = configData.staticQrisImageUrl;
                 const qrisImageElement = document.getElementById('staticQrisImage');
-                if (qrisImageElement) { // Jika modal sudah ada di DOM
-                     qrisImageElement.src = STATIC_QRIS_IMAGE_URL;
+                if (qrisImageElement) {
+                     // Tidak langsung set src di sini, tapi saat modal QRIS ditampilkan
+                     // qrisImageElement.src = STATIC_QRIS_IMAGE_URL; 
                 }
+                console.log("Static QRIS Image URL loaded:", STATIC_QRIS_IMAGE_URL);
             } else {
                 console.error("Gagal mengambil URL QRIS statis dari server atau URL tidak valid.");
                 showMessage("Konfigurasi pembayaran QRIS tidak lengkap. Harap hubungi admin.", "error");
@@ -251,7 +254,6 @@
                 document.querySelectorAll('.btn-qris-deposit').forEach(btn => btn.style.display = 'none');
             }
         }
-
 
         // --- Authentication Functions ---
         async function handlePinLogin(event) {
@@ -270,7 +272,7 @@
                 document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
                 showPage('dashboardPage');
                 loadTargets();
-            } else { /* Pesan error sudah dihandle oleh apiCall */ }
+            }
             document.getElementById('loginPinForm').reset();
         }
         async function handlePinRegister(event) {
@@ -293,7 +295,7 @@
             } else if (data && data.id && !data.token) {
                 showMessage('Registrasi berhasil! Silakan login dengan PIN Anda.', 'success');
                 showPage('loginPinPage');
-            } else { /* Pesan error sudah dihandle oleh apiCall */ }
+            }
             document.getElementById('registerPinForm').reset();
         }
         function handleLogout(showMsg = true) {
@@ -305,9 +307,9 @@
             showPage('loginPinPage');
         }
         async function checkAuthStatus() {
+            await fetchAppConfig(); // Ambil config termasuk URL QRIS
             const token = localStorage.getItem('celenganAuthToken');
             const user = JSON.parse(localStorage.getItem('celenganCurrentUser'));
-            await fetchAppConfig(); // Ambil config termasuk URL QRIS
             if (token && user) {
                 currentAuthToken = token;
                 currentUser = user;
@@ -326,7 +328,7 @@
         async function loadTargets() {
             const targetListContainer = document.getElementById('targetListContainer');
             const noTargetsText = document.getElementById('noTargetsText');
-            if (!currentUser) { targetListContainer.innerHTML = '<p>Silakan login untuk melihat target.</p>'; noTargetsText.style.display = 'none'; return; }
+            if (!currentUser) { targetListContainer.innerHTML = '<p style="color: #aaa;">Silakan login untuk melihat target.</p>'; noTargetsText.style.display = 'none'; return; }
             targetListContainer.innerHTML = '<p style="color: #aaa;">Memuat target...</p>';
             const response = await apiCall('/targets', 'GET');
             if (response && Array.isArray(response)) {
@@ -356,24 +358,26 @@
             if (!nama_target || !jumlah_target || parseFloat(jumlah_target) <= 0) { showMessage('Nama target dan jumlah target (positif) harus diisi.', 'error'); return; }
             const payload = { nama_target, jumlah_target: parseFloat(jumlah_target), tanggal_target };
             let result;
-            if (targetId) { result = await apiCall(`/targets/${targetId}`, 'PUT', payload); } else { result = await apiCall('/targets', 'POST', payload); }
-            if (result && (result.id || result.nama_target || (result.message && result.message.toLowerCase().includes('berhasil')))) {
+            console.log(targetId ? `Mode Edit, ID: ${targetId}` : "Mode Buat Baru"); // Debug
+            if (targetId) { result = await apiCall(`/targets/${targetId}`, 'PUT', payload); }
+            else { result = await apiCall('/targets', 'POST', payload); }
+            if (result && (result.id || result.nama_target || (result.message && result.message.toLowerCase().includes('berhasil')) || (result.message && result.message.toLowerCase().includes('updated')))) {
                 showMessage(targetId ? 'Target berhasil diperbarui!' : 'Target baru berhasil dibuat!', 'success');
                 closeModal('createTargetModal'); loadTargets();
-            }
-            document.getElementById('targetForm').reset();
+            } else { showMessage(targetId ? 'Gagal memperbarui target.' : 'Gagal membuat target baru.', 'error');}
         }
-        async function openEditTargetModal(targetId) {
+        async function openEditTargetModal(targetIdToEdit) {
             if (!currentUser) { showMessage("Anda harus login.", "error"); return; }
-            const target = await apiCall(`/targets/${targetId}`, 'GET');
+            const target = await apiCall(`/targets/${targetIdToEdit}`, 'GET');
             if (target && target.id) {
+                document.getElementById('targetForm').reset(); // Reset form sebelum diisi
                 document.getElementById('modalTitle').textContent = 'Edit Target Tabungan';
                 document.getElementById('targetId').value = target.id;
                 document.getElementById('namaTarget').value = target.nama_target;
                 document.getElementById('jumlahTarget').value = target.jumlah_target;
                 document.getElementById('tanggalTarget').value = target.tanggal_target ? target.tanggal_target.split('T')[0] : '';
                 openModal('createTargetModal');
-            }
+            } else { showMessage('Gagal mengambil detail target untuk diedit.', 'error'); }
         }
         async function handleDeleteTarget(targetId, targetName) {
             if (!currentUser) { showMessage("Anda harus login.", "error"); return; }
@@ -397,19 +401,14 @@
             const amount = document.getElementById('qrisJumlahDeposit').value;
             const targetName = document.getElementById('qrisAmountTargetName').textContent;
             if (!amount || parseFloat(amount) < 10000) { showMessage('Jumlah deposit minimal Rp 10.000.', 'error'); return; }
+            if (!STATIC_QRIS_IMAGE_URL || STATIC_QRIS_IMAGE_URL === "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI") {
+                showMessage("URL Gambar QRIS belum dikonfigurasi. Harap hubungi admin.", "error"); return;
+            }
             closeModal('qrisAmountModal');
             document.getElementById('qrisPaymentTargetNameDisplay').textContent = targetName;
             document.getElementById('qrisPaymentAmountDisplay').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(amount)}`;
-            const qrisImageEl = document.getElementById('staticQrisImage');
-            if (STATIC_QRIS_IMAGE_URL && STATIC_QRIS_IMAGE_URL !== "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI") {
-                 qrisImageEl.src = STATIC_QRIS_IMAGE_URL;
-                 qrisImageEl.style.display = 'block';
-            } else {
-                qrisImageEl.style.display = 'none';
-                qrisImageEl.alt = "URL Gambar QRIS Statis belum dikonfigurasi dengan benar.";
-                showMessage("Gambar QRIS tidak dapat dimuat. Harap hubungi admin.", "error");
-                return; // Jangan buka modal jika URL QRIS tidak ada
-            }
+            document.getElementById('staticQrisImage').src = STATIC_QRIS_IMAGE_URL;
+            document.getElementById('staticQrisImage').style.display = 'block';
             document.getElementById('qrisConfirmTargetId').value = targetId;
             document.getElementById('qrisConfirmAmount').value = amount;
             openModal('qrisPaymentModal');
@@ -430,21 +429,19 @@
         }
 
         // --- Modal Control ---
-        function openModal(modalId) {
+        function openModal(modalId) { // Disederhanakan
             const modal = document.getElementById(modalId);
-            if (modalId === 'createTargetModal') {
-                 document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
-                 document.getElementById('targetId').value = '';
-                 document.getElementById('targetForm').reset();
-            }
             if(modal) modal.style.display = 'flex';
         }
-        function closeModal(modalId) {
+        function closeModal(modalId) { // Disederhanakan, reset form lebih eksplisit di trigger
             const modal = document.getElementById(modalId);
             if(modal) modal.style.display = 'none';
             const form = modal ? modal.querySelector('form') : null;
-            if (form) { form.reset(); }
-            if (modalId === 'createTargetModal') { document.getElementById('targetId').value = ''; }
+            if (form) { form.reset(); } // Umumnya reset form saat ditutup
+            if (modalId === 'createTargetModal') { // Pastikan ID dan judul spesifik direset untuk create
+                document.getElementById('targetId').value = '';
+                document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
+            }
         }
 
         // --- Page Navigation ---
@@ -459,9 +456,9 @@
                 if(navLogout) navLogout.style.display = 'inline-block';
                 if(navToRegister) navToRegister.style.display = 'none';
                 if(navToLogin) navToLogin.style.display = 'none';
-                if (pageId !== 'dashboardPage' && document.getElementById('dashboardPage')) {
-                    const activeModal = document.querySelector('.modal[style*="display: flex"]');
-                    if (!activeModal) showPage('dashboardPage');
+                const activeModal = document.querySelector('.modal[style*="display: flex"]');
+                if (pageId !== 'dashboardPage' && !activeModal && document.getElementById('dashboardPage')) {
+                    showPage('dashboardPage');
                 }
             } else {
                 if(navLogout) navLogout.style.display = 'none';
@@ -491,6 +488,9 @@
             if(btnOpenCreateTargetModal) {
                 btnOpenCreateTargetModal.addEventListener('click', () => {
                     if (!currentAuthToken || !currentUser) { showMessage("Anda harus login untuk membuat target.", "error"); showPage('loginPinPage'); return; }
+                    document.getElementById('targetForm').reset(); // Reset form untuk "Buat Baru"
+                    document.getElementById('targetId').value = '';   // Kosongkan ID untuk "Buat Baru"
+                    document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru'; // Set judul
                     openModal('createTargetModal');
                 });
             }
@@ -505,4 +505,3 @@
     </script>
 </body>
 </html>
-
