@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celengan Digital Saya (Mode PIN)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* Reset CSS Dasar */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+            display: flex; /* Untuk memusatkan konten login/dashboard */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            padding-top: 80px; /* Ruang untuk nav fixed jika ada */
+        }
+
+        .auth-container, .dashboard-container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+        .auth-container { max-width: 450px; }
+        .dashboard-container { max-width: 900px; margin: 0 auto; }
+
+
+        h1, h2, h3 { color: #2c3e50; margin-bottom: 20px; }
+        h1 { font-size: 28px; font-weight: 800; text-align: center; }
+        h2 { font-size: 24px; font-weight: 700; }
+        h3 { font-size: 18px; font-weight: 700; text-align: left; color: #343a40; } /* Untuk judul target card */
+
+
+        /* Form Styling */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #555; }
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"], /* Digunakan untuk PIN, type="password" agar tersembunyi */
+        .form-group input[type="number"],
+        .form-group input[type="date"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        .form-group input:focus { outline: none; border-color: #20c997; box-shadow: 0 0 0 2px rgba(32, 201, 151, 0.2); }
+        .form-text { text-align: center; margin-top: 20px; font-size: 14px; }
+        .form-text a { color: #20c997; text-decoration: none; font-weight: 600; }
+        .form-text a:hover { text-decoration: underline; }
+
+        /* Tombol */
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; font-size: 16px; font-weight: 700; line-height: 1.5; text-align: center; text-decoration: none; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; }
+        .btn-full-width { width: 100%; }
+        .btn-sm { padding: 8px 16px; font-size: 14px; width: auto; } /* auto width untuk tombol kecil */
+        .btn i { margin-right: 8px; }
+        .btn-primary { background-color: #20c997; color: #ffffff; box-shadow: 0px 4px 12px rgba(32, 201, 151, 0.25); }
+        .btn-primary:hover { background-color: #1baa80; box-shadow: 0px 6px 15px rgba(32, 201, 151, 0.35); transform: translateY(-1px); }
+        .btn-primary:active { background-color: #179b73; box-shadow: 0px 2px 8px rgba(32, 201, 151, 0.2); transform: translateY(0); }
+        .btn-secondary { background-color: transparent; color: #20c997; border: 2px solid #20c997; }
+        .btn-secondary:hover { background-color: rgba(32, 201, 151, 0.1); color: #1baa80; border-color: #1baa80; }
+        .btn-danger { background-color: #dc3545; color: white; border: 2px solid #dc3545; }
+        .btn-danger:hover { background-color: #c82333; border-color: #bd2130; }
+        .btn:disabled, .btn[disabled] { background-color: #e9ecef; color: #adb5bd; border-color: #e9ecef; box-shadow: none; cursor: not-allowed; transform: none; }
+        .btn-secondary:disabled, .btn-secondary[disabled] { background-color: transparent; color: #adb5bd; border-color: #adb5bd; }
+
+        /* Dashboard */
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
+        .dashboard-header h2 { text-align: left; margin-bottom: 5px;}
+        #dashboardUserGreeting { font-size: 16px; font-weight: normal; color: #555; width: 100%; margin-bottom: 15px; }
+        .target-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .target-card { background-color: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #e9ecef; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        .target-info { font-size: 14px; color: #555; margin-bottom: 8px; } .target-info strong { color: #333; }
+        .progress-bar-container { width: 100%; background-color: #e9ecef; border-radius: 25px; height: 12px; margin-top: 10px; margin-bottom: 5px; overflow: hidden; }
+        .progress-bar { background-color: #20c997; height: 100%; border-radius: 25px; width: 0%; transition: width 0.5s ease-in-out; }
+        .progress-text { font-size: 12px; color: #555; text-align: right; margin-bottom: 15px; }
+        .target-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background-color: #fff; margin: auto; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 90%; max-width: 500px; position: relative; }
+        .modal-content h2 { text-align: center; }
+        .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 15px; right: 20px; }
+        .close-button:hover, .close-button:focus { color: #333; text-decoration: none; cursor: pointer; }
+
+        /* Navigasi Sederhana */
+        .simple-nav { position: fixed; top: 0; left: 0; width: 100%; background: #ffffff; padding: 10px 20px; border-bottom: 1px solid #e0e0e0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 1001; display: flex; justify-content: flex-end; /* Tombol ke kanan */ align-items: center; gap: 10px; }
+        .simple-nav button { background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background-color 0.2s ease; }
+        .simple-nav button:hover { background: #5a6268; }
+        /* Sembunyikan semua section by default */
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="simple-nav">
+        <button id="navLogoutButton" style="display: none;">Logout</button>
+        <button id="navToRegisterButton" style="display: none;">Belum Punya Akun? Register</button>
+        <button id="navToLoginButton" style="display: none;">Sudah Punya Akun? Login</button>
+    </div>
+
+    <section id="loginPinPage" class="page-section">
+        <div class="auth-container">
+            <h1>Login dengan PIN</h1>
+            <form id="loginPinForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" name="email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="loginPin">Kode PIN (6 digit angka)</label>
+                    <input type="password" id="loginPin" name="pin" required maxlength="6" pattern="\d{6}" inputmode="numeric" autocomplete="one-time-code">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full-width">
+                    <i class="fas fa-sign-in-alt"></i> Masuk
+                </button>
+                <p class="form-text">Belum punya akun? <a href="#" id="linkToRegisterPage">Daftar di sini</a></p>
+            </form>
+        </div>
+    </section>
+
+    <section id="registerPinPage" class="page-section">
+        <div class="auth-container">
+            <h1>Registrasi Akun Baru</h1>
+            <form id="registerPinForm">
+                <div class="form-group">
+                    <label for="registerNama">Nama Lengkap</label>
+                    <input type="text" id="registerNama" name="nama" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPin">Buat Kode PIN (6 digit angka)</label>
+                    <input type="password" id="registerPin" name="pin" required maxlength="6" pattern="\d{6}" inputmode="numeric">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full-width">
+                    <i class="fas fa-user-plus"></i> Daftar
+                </button>
+                <p class="form-text">Sudah punya akun? <a href="#" id="linkToLoginPage">Login di sini</a></p>
+            </form>
+        </div>
+    </section>
+
+    <section id="dashboardPage" class="page-section">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h2>Target Tabungan Saya</h2>
+                <span id="dashboardUserGreeting">Memuat data...</span>
+                <button id="btnOpenCreateTargetModal" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Buat Target Baru
+                </button>
+            </div>
+            <div class="target-list" id="targetListContainer">
+                <p>Data target akan muncul di sini.</p>
+            </div>
+            <p id="noTargetsText" style="text-align:center; margin-top:20px; display:none;">Anda belum memiliki target tabungan.</p>
+        </div>
+    </section>
+
+    <div id="createTargetModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 id="modalTitle">Buat Target Tabungan Baru</h2>
+            <form id="targetForm">
+                <input type="hidden" id="targetId" name="targetId">
+                <div class="form-group"> <label for="namaTarget">Nama Target</label> <input type="text" id="namaTarget" name="nama_target" required> </div>
+                <div class="form-group"> <label for="jumlahTarget">Jumlah Target (Rp)</label> <input type="number" id="jumlahTarget" name="jumlah_target" step="1000" min="0" required> </div>
+                <div class="form-group"> <label for="tanggalTarget">Tanggal Target (Opsional)</label> <input type="date" id="tanggalTarget" name="tanggal_target"> </div>
+                <button type="submit" class="btn btn-primary btn-full-width"> <i class="fas fa-save"></i> Simpan Target </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="depositModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Nabung ke Target "<span id="depositTargetName">Nama Target</span>"</h2>
+            <form id="depositForm">
+                <input type="hidden" id="depositTargetId" name="target_id">
+                <div class="form-group"> <label for="jumlahDeposit">Jumlah Deposit (Rp)</label> <input type="number" id="jumlahDeposit" name="jumlah" step="1000" min="0" required> </div>
+                <div class="form-group"> <label for="deskripsiDeposit">Deskripsi (Opsional)</label> <input type="text" id="deskripsiDeposit" name="deskripsi"> </div>
+                <button type="submit" class="btn btn-primary btn-full-width"> <i class="fas fa-paper-plane"></i> Deposit Sekarang </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- Global Variables & Configuration ---
+        const API_BASE_URL = 'http://localhost:3000/api'; // Sesuaikan jika backend Anda di URL/port berbeda
+        let currentAuthToken = localStorage.getItem('celenganAuthToken'); // Nama item localStorage untuk JWT
+        let currentUser = JSON.parse(localStorage.getItem('celenganCurrentUser'));
+
+        // --- Utility Functions ---
+        async function apiCall(endpoint, method = 'GET', body = null, requiresAuth = true) {
+            const headers = { 'Content-Type': 'application/json' };
+            if (requiresAuth && currentAuthToken) {
+                headers['Authorization'] = `Bearer ${currentAuthToken}`;
+            } else if (requiresAuth && !currentAuthToken) {
+                showMessage('Sesi tidak valid atau Anda belum login. Silakan login kembali.', 'error');
+                handleLogout(false); // Logout tanpa pesan tambahan jika token hilang saat request butuh auth
+                return null;
+            }
+
+            const config = { method: method, headers: headers };
+            if (body) { config.body = JSON.stringify(body); }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                if (response.status === 401 && requiresAuth) {
+                    const errorData = await response.json().catch(() => ({ message: 'Autentikasi gagal (401). Token mungkin tidak valid atau sesi berakhir.' }));
+                    showMessage(errorData.message, 'error');
+                    handleLogout(false);
+                    return null;
+                }
+                 if (response.status === 403 && requiresAuth) {
+                    const errorData = await response.json().catch(() => ({ message: 'Akses ditolak (403). Anda tidak memiliki izin.' }));
+                    showMessage(errorData.message, 'error');
+                    // Tidak perlu logout, hanya akses ditolak
+                    return null;
+                }
+                const data = await response.json();
+                if (!response.ok) {
+                    console.error('API Error Response:', data);
+                    showMessage(data.message || `Error ${response.status}: Terjadi kesalahan`, 'error');
+                    return null;
+                }
+                return data;
+            } catch (error) {
+                console.error('Network or parsing error:', error);
+                if (error instanceof SyntaxError) {
+                    showMessage('Gagal memproses respons dari server. Format tidak sesuai.', 'error');
+                } else {
+                    showMessage('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.', 'error');
+                }
+                return null;
+            }
+        }
+
+        function showMessage(message, type = 'info') {
+            alert(`[${type.toUpperCase()}] ${message}`);
+            console.log(`Message: [${type.toUpperCase()}] ${message}`);
+        }
+
+        // --- Authentication Functions (PIN + JWT) ---
+        async function handlePinLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const pin = document.getElementById('loginPin').value;
+
+            if (!email || !pin) {
+                showMessage('Email dan PIN harus diisi.', 'error');
+                return;
+            }
+            if (!/^\d{6}$/.test(pin)) {
+                 showMessage('PIN tidak valid. Harus 6 digit angka.', 'error');
+                 return;
+            }
+
+            const data = await apiCall('/auth/login-pin', 'POST', { email, pin }, false); // Login tidak butuh auth awal
+
+            if (data && data.token) {
+                currentAuthToken = data.token;
+                currentUser = { id: data.id, nama: data.nama, email: data.email };
+                localStorage.setItem('celenganAuthToken', currentAuthToken);
+                localStorage.setItem('celenganCurrentUser', JSON.stringify(currentUser));
+                showMessage(`Login berhasil! Selamat datang, ${data.nama}.`, 'success');
+                document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
+                showPage('dashboardPage');
+                loadTargets();
+            } else if (data && data.message) {
+                // Pesan error spesifik dari backend sudah ditangani oleh apiCall,
+                // jadi tidak perlu showMessage lagi di sini kecuali untuk kasus khusus.
+            }
+            document.getElementById('loginPinForm').reset();
+        }
+
+        async function handlePinRegister(event) {
+            event.preventDefault();
+            const nama = document.getElementById('registerNama').value;
+            const email = document.getElementById('registerEmail').value;
+            const pin = document.getElementById('registerPin').value;
+
+            if (!nama || !email || !pin) {
+                showMessage('Nama, Email, dan PIN harus diisi.', 'error');
+                return;
+            }
+            if (!/^\d{6}$/.test(pin)) {
+                 showMessage('PIN tidak valid. Harus 6 digit angka.', 'error');
+                 return;
+            }
+
+            const data = await apiCall('/auth/register-pin', 'POST', { nama, email, pin }, false);
+
+            if (data && data.token) { // Jika registrasi langsung login
+                currentAuthToken = data.token;
+                currentUser = { id: data.id, nama: data.nama, email: data.email };
+                localStorage.setItem('celenganAuthToken', currentAuthToken);
+                localStorage.setItem('celenganCurrentUser', JSON.stringify(currentUser));
+                showMessage('Registrasi berhasil! Selamat datang.', 'success');
+                document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
+                showPage('dashboardPage');
+                loadTargets();
+            } else if (data && data.id && !data.token) { // Jika registrasi berhasil tapi tidak langsung login
+                showMessage('Registrasi berhasil! Silakan login dengan PIN Anda.', 'success');
+                showPage('loginPinPage');
+            }
+            document.getElementById('registerPinForm').reset();
+        }
+
+        function handleLogout(showMsg = true) {
+            localStorage.removeItem('celenganAuthToken');
+            localStorage.removeItem('celenganCurrentUser');
+            currentAuthToken = null;
+            currentUser = null;
+            if (showMsg) {
+                showMessage('Anda telah berhasil logout.', 'info');
+            }
+            showPage('loginPinPage'); // Arahkan ke halaman login PIN
+        }
+
+        async function checkAuthStatus() {
+            const token = localStorage.getItem('celenganAuthToken');
+            const user = JSON.parse(localStorage.getItem('celenganCurrentUser'));
+
+            if (token && user) {
+                currentAuthToken = token;
+                currentUser = user;
+                // Validasi token ke backend untuk memastikan masih valid (opsional tapi lebih aman)
+                const userProfile = await apiCall('/auth/profile', 'GET');
+                if (userProfile && userProfile.id) {
+                    currentUser = userProfile; // Update dengan data terbaru jika perlu
+                    localStorage.setItem('celenganCurrentUser', JSON.stringify(currentUser));
+                    document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
+                    showPage('dashboardPage');
+                    loadTargets();
+                } else {
+                    // Token ada tapi tidak valid lagi di backend
+                    handleLogout(false); // Logout diam-diam
+                }
+            } else {
+                showPage('loginPinPage');
+            }
+        }
+
+        // --- Target Management Functions (Kode sama, bergantung pada JWT via apiCall) ---
+        async function loadTargets() {
+            const targetListContainer = document.getElementById('targetListContainer');
+            const noTargetsText = document.getElementById('noTargetsText');
+            if (!currentUser) {
+                targetListContainer.innerHTML = '<p>Silakan login untuk melihat target.</p>';
+                noTargetsText.style.display = 'none';
+                return;
+            }
+            targetListContainer.innerHTML = '<p>Memuat target...</p>';
+            const targets = await apiCall('/targets', 'GET');
+            if (targets && Array.isArray(targets)) {
+                targetListContainer.innerHTML = '';
+                if (targets.length === 0) {
+                    noTargetsText.textContent = 'Anda belum memiliki target tabungan.';
+                    noTargetsText.style.display = 'block';
+                } else {
+                    noTargetsText.style.display = 'none';
+                    targets.forEach(target => targetListContainer.appendChild(renderTargetCard(target)));
+                }
+            } else if (currentAuthToken) {
+                targetListContainer.innerHTML = '<p>Gagal memuat target. Sesi mungkin tidak valid.</p>';
+                noTargetsText.style.display = 'none';
+            }
+        }
+        function renderTargetCard(target) { /* ... (kode SAMA PERSIS seperti versi API Key) ... */
+            const card = document.createElement('div');
+            card.className = 'target-card';
+            card.setAttribute('data-target-id', target.id);
+
+            const progress = target.jumlah_target > 0 ? Math.min((target.jumlah_terkumpul / target.jumlah_target) * 100, 100) : 0;
+            const terkumpulFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(target.jumlah_terkumpul);
+            const targetFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(target.jumlah_target);
+            const tanggalTargetFormatted = target.tanggal_target ? new Date(target.tanggal_target).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Tidak ada';
+
+            card.innerHTML = `
+                <h3>${target.nama_target}</h3>
+                <div class="target-info">Target: <strong>${targetFormatted}</strong></div>
+                <div class="target-info">Terkumpul: <strong>${terkumpulFormatted}</strong></div>
+                <div class="target-info">Tanggal Target: <strong>${tanggalTargetFormatted}</strong></div>
+                <div class="target-info">Status: <strong style="text-transform:capitalize;">${target.status}</strong></div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: ${progress.toFixed(2)}%;"></div>
+                </div>
+                <div class="progress-text">${progress.toFixed(1)}%</div>
+                <div class="target-actions">
+                    ${target.status === 'aktif' ? `<button class="btn btn-primary btn-sm btn-deposit"><i class="fas fa-wallet"></i> Nabung</button>` : ''}
+                    <button class="btn btn-secondary btn-sm btn-edit"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="btn btn-danger btn-sm btn-delete"><i class="fas fa-trash"></i> Hapus</button>
+                </div>
+            `;
+
+            const depositButton = card.querySelector('.btn-deposit');
+            if (depositButton) {
+                depositButton.addEventListener('click', () => openDepositModal(target.id, target.nama_target));
+            }
+            card.querySelector('.btn-edit').addEventListener('click', () => openEditTargetModal(target.id));
+            card.querySelector('.btn-delete').addEventListener('click', () => handleDeleteTarget(target.id, target.nama_target));
+            return card;
+        }
+        async function handleTargetForm(event) { /* ... (kode SAMA PERSIS seperti versi API Key, pastikan menggunakan `apiCall` yang sudah benar) ... */
+            event.preventDefault();
+            if (!currentUser) { showMessage("Anda harus login untuk melakukan aksi ini.", "error"); return; }
+            const targetId = document.getElementById('targetId').value;
+            const nama_target = document.getElementById('namaTarget').value;
+            const jumlah_target = document.getElementById('jumlahTarget').value;
+            const tanggal_target = document.getElementById('tanggalTarget').value || null;
+
+            if (!nama_target || !jumlah_target || parseFloat(jumlah_target) <= 0) {
+                showMessage('Nama target dan jumlah target (positif) harus diisi.', 'error'); return;
+            }
+            const payload = { nama_target, jumlah_target: parseFloat(jumlah_target), tanggal_target };
+            let result;
+            if (targetId) {
+                result = await apiCall(`/targets/${targetId}`, 'PUT', payload);
+            } else {
+                result = await apiCall('/targets', 'POST', payload);
+            }
+            if (result && (result.id || (result.message && result.message.toLowerCase().includes('updated')) ) ) {
+                showMessage(targetId ? 'Target berhasil diperbarui!' : 'Target baru berhasil dibuat!', 'success');
+                closeModal('createTargetModal');
+                loadTargets();
+            }
+            document.getElementById('targetForm').reset();
+        }
+        async function openEditTargetModal(targetId) { /* ... (kode SAMA PERSIS seperti versi API Key, pastikan menggunakan `apiCall` yang sudah benar) ... */
+            if (!currentUser) { showMessage("Anda harus login untuk melakukan aksi ini.", "error"); return; }
+            const target = await apiCall(`/targets/${targetId}`, 'GET');
+            if (target) {
+                document.getElementById('modalTitle').textContent = 'Edit Target Tabungan';
+                document.getElementById('targetId').value = target.id;
+                document.getElementById('namaTarget').value = target.nama_target;
+                document.getElementById('jumlahTarget').value = target.jumlah_target;
+                document.getElementById('tanggalTarget').value = target.tanggal_target ? target.tanggal_target.split('T')[0] : '';
+                openModal('createTargetModal');
+            }
+        }
+        async function handleDeleteTarget(targetId, targetName) { /* ... (kode SAMA PERSIS seperti versi API Key, pastikan menggunakan `apiCall` yang sudah benar) ... */
+            if (!currentUser) { showMessage("Anda harus login untuk melakukan aksi ini.", "error"); return; }
+            if (confirm(`Apakah Anda yakin ingin menghapus target "${targetName}"?`)) {
+                const result = await apiCall(`/targets/${targetId}`, 'DELETE');
+                if (result && result.message === 'Target removed') {
+                    showMessage('Target berhasil dihapus.', 'success');
+                    loadTargets();
+                }
+            }
+        }
+
+        // --- Deposit Functions (Kode sama, bergantung pada JWT via apiCall) ---
+        function openDepositModal(targetId, targetName) { /* ... (kode SAMA PERSIS) ... */
+            if (!currentUser) { showMessage("Anda harus login untuk melakukan aksi ini.", "error"); return; }
+            document.getElementById('depositTargetId').value = targetId;
+            document.getElementById('depositTargetName').textContent = targetName;
+            document.getElementById('depositForm').reset();
+            openModal('depositModal');
+        }
+        async function handleDepositForm(event) { /* ... (kode SAMA PERSIS, pastikan menggunakan `apiCall` yang sudah benar) ... */
+            event.preventDefault();
+            if (!currentUser) { showMessage("Anda harus login untuk melakukan aksi ini.", "error"); return; }
+            const target_id = document.getElementById('depositTargetId').value;
+            const jumlah = document.getElementById('jumlahDeposit').value;
+            const deskripsi = document.getElementById('deskripsiDeposit').value;
+
+            if (!jumlah || parseFloat(jumlah) <= 0) {
+                showMessage('Jumlah deposit harus positif.', 'error'); return;
+            }
+            const payload = { target_id: parseInt(target_id), jumlah: parseFloat(jumlah), deskripsi };
+            const result = await apiCall('/transactions/deposit', 'POST', payload);
+            if (result && result.transaction_id) {
+                showMessage('Deposit berhasil!', 'success');
+                closeModal('depositModal');
+                loadTargets();
+            }
+            document.getElementById('depositForm').reset();
+        }
+
+
+        // --- Modal Control (Kode sama) ---
+        function openModal(modalId) { /* ... (kode SAMA PERSIS) ... */
+            const modal = document.getElementById(modalId);
+            if (modalId === 'createTargetModal') {
+                 document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
+                 document.getElementById('targetId').value = '';
+                 document.getElementById('targetForm').reset();
+            }
+            modal.style.display = 'flex';
+        }
+        function closeModal(modalId) { /* ... (kode SAMA PERSIS) ... */
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+            const form = modal.querySelector('form');
+            if (form) { form.reset(); }
+            if (modalId === 'createTargetModal') { document.getElementById('targetId').value = ''; }
+        }
+
+        // --- Page Navigation ---
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(section => section.classList.remove('active'));
+            const pageToShow = document.getElementById(pageId);
+            if (pageToShow) pageToShow.classList.add('active');
+
+            const navLogout = document.getElementById('navLogoutButton');
+            const navToRegister = document.getElementById('navToRegisterButton');
+            const navToLogin = document.getElementById('navToLoginButton');
+
+            if (currentAuthToken && currentUser) { // Logged in
+                if(navLogout) navLogout.style.display = 'inline-block';
+                if(navToRegister) navToRegister.style.display = 'none';
+                if(navToLogin) navToLogin.style.display = 'none';
+                if (pageId !== 'dashboardPage') showPage('dashboardPage'); // Paksa ke dashboard jika sudah login
+            } else { // Logged out
+                if(navLogout) navLogout.style.display = 'none';
+                if (pageId === 'loginPinPage') {
+                    if(navToRegister) navToRegister.style.display = 'inline-block';
+                    if(navToLogin) navToLogin.style.display = 'none';
+                } else if (pageId === 'registerPinPage') {
+                    if(navToRegister) navToRegister.style.display = 'none';
+                    if(navToLogin) navToLogin.style.display = 'inline-block';
+                } else { // Default jika tidak login dan tidak di halaman auth spesifik
+                     if(navToRegister) navToRegister.style.display = 'inline-block';
+                     if(navToLogin) navToLogin.style.display = 'none'; // Sembunyikan tombol login jika sudah di login page
+                }
+            }
+        }
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            document.getElementById('loginPinForm').addEventListener('submit', handlePinLogin);
+            document.getElementById('registerPinForm').addEventListener('submit', handlePinRegister); // Jika ada form registrasi
+
+            document.getElementById('targetForm').addEventListener('submit', handleTargetForm);
+            document.getElementById('depositForm').addEventListener('submit', handleDepositForm);
+
+            document.querySelectorAll('.modal .close-button').forEach(button => {
+                button.addEventListener('click', () => closeModal(button.closest('.modal').id));
+            });
+            window.addEventListener('click', (event) => {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    if (event.target == modal) closeModal(modal.id);
+                });
+            });
+
+            const navLogoutButton = document.getElementById('navLogoutButton');
+            if(navLogoutButton) navLogoutButton.addEventListener('click', () => handleLogout());
+
+            const linkToRegister = document.getElementById('linkToRegisterPage');
+            if(linkToRegister) linkToRegister.addEventListener('click', (e) => { e.preventDefault(); showPage('registerPinPage'); });
+
+            const linkToLogin = document.getElementById('linkToLoginPage');
+            if(linkToLogin) linkToLogin.addEventListener('click', (e) => { e.preventDefault(); showPage('loginPinPage'); });
+
+            const navToRegisterButton = document.getElementById('navToRegisterButton');
+            if(navToRegisterButton) navToRegisterButton.addEventListener('click', () => showPage('registerPinPage'));
+
+            const navToLoginButton = document.getElementById('navToLoginButton');
+            if(navToLoginButton) navToLoginButton.addEventListener('click', () => showPage('loginPinPage'));
+
+
+            const btnOpenCreateTargetModal = document.getElementById('btnOpenCreateTargetModal');
+            if(btnOpenCreateTargetModal) {
+                btnOpenCreateTargetModal.addEventListener('click', () => {
+                    if (!currentAuthToken || !currentUser) {
+                        showMessage("Anda harus login terlebih dahulu untuk membuat target.", "error");
+                        showPage('loginPinPage');
+                        return;
+                    }
+                    document.getElementById('targetForm').reset();
+                    document.getElementById('targetId').value = '';
+                    document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
+                    openModal('createTargetModal');
+                });
+            }
+        }
+
+        // Panggil saat DOM sudah siap
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            checkAuthStatus(); // Cek status login saat halaman pertama kali dimuat
+        });
+    </script>
+</body>
+</html>

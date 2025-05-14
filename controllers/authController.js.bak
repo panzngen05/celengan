@@ -1,0 +1,24 @@
+// celengan-api/controllers/authController.js
+// const bcrypt = require('bcryptjs'); // Tidak perlu lagi untuk password
+// const jwt = require('jsonwebtoken'); // Tidak perlu lagi untuk JWT
+// const pool = require('../config/db'); // Masih mungkin diperlukan jika ada fungsi user lain
+
+// Fungsi registerUser dan loginUser DIHAPUS atau digantikan fungsi admin (di luar scope saat ini)
+// Fungsi generateToken (JWT) DIHAPUS
+
+// @desc    Get user profile (berdasarkan API Key)
+// @route   GET /api/auth/profile
+// @access  Private (via API Key)
+const getUserProfile = async (req, res) => {
+    // req.user sudah di-set oleh middleware apiKeyProtect
+    if (!req.user) {
+        // Ini seharusnya sudah ditangani oleh middleware, tapi sebagai backup
+        return res.status(401).json({ message: 'Tidak terautentikasi atau user tidak ditemukan.' });
+    }
+    res.json(req.user); // Mengembalikan { id, nama, email } dari user terkait API Key
+};
+
+module.exports = {
+    getUserProfile,
+    // Anda bisa menambahkan fungsi di sini nanti untuk admin membuat user dan API key
+};

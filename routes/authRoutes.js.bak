@@ -1,0 +1,15 @@
+// celengan-api/routes/authRoutes.js
+const express = require('express');
+const router = express.Router();
+const {
+    registerUserWithPin,
+    loginUserWithPin,
+    getUserProfile
+} = require('../controllers/authController');
+const { protect } = require('../middleware/authMiddleware'); // Middleware JWT
+
+router.post('/register-pin', registerUserWithPin);
+router.post('/login-pin', loginUserWithPin);
+router.get('/profile', protect, getUserProfile); // Diproteksi dengan JWT
+
+module.exports = router;

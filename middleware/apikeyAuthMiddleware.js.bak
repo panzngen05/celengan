@@ -1,0 +1,48 @@
+// celengan-api/middleware/apiKeyAuthMiddleware.js
+const pool = require('../config/db');
+const { hashApiKey } = require('../utils/apiKeyUtils');
+
+const apiKeyProtect = async (req, res, next) => {
+    const apiKey = req.headers['x-api-key']; // Atau header lain sesuai preferensi, mis: 'Authorization: Bearer <API_KEY>'
+
+    if (!apiKey) {
+        return res.status(401).json({ message: 'Akses ditolak. API Key tidak ditemukan.' });
+    }
+
+    try {
+        const apiKeyHash = hashApiKey(apiKey);
+
+        const [keys] = await pool.query(
+            'SELECT ak.user_id, ak.status, u.id AS userId, u.nama, u.email FROM api_keys ak JOIN users u ON ak.user_id = u.id WHERE ak.api_key_hash = ?',
+            [apiKeyHash]
+        );
+
+        if (keys.length === 0) {
+            return res.status(401).json({ message: 'Akses ditolak. API Key tidak valid.' });
+        }
+
+        const keyData = keys[0];
+
+        if (keyData.status !== 'aktif') {
+            return res.status(403).json({ message: 'Akses ditolak. API Key sudah tidak aktif/dicabut.' });
+        }
+
+        // Update last_used_at (opsional, bisa dilakukan secara asynchronous agar tidak memperlambat request)
+        pool.query('UPDATE api_keys SET last_used_at = CURRENT_TIMESTAMP WHERE api_key_hash = ?', [apiKeyHash])
+            .catch(err => console.error("Gagal update last_used_at untuk API key:", err));
+
+        req.user = { // Sematkan info pengguna ke request
+            id: keyData.userId,
+            nama: keyData.nama,
+            email: keyData.email,
+        };
+        // req.apiKeyData = keyData; // Jika Anda butuh info kunci lainnya
+
+        next();
+    } catch (error) {
+        console.error('Error pada middleware API Key:', error);
+        res.status(500).json({ message: 'Kesalahan server saat verifikasi API Key.' });
+    }
+};
+
+module.exports = { apiKeyProtect };

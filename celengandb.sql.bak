@@ -1,0 +1,55 @@
+-- Membuat database jika belum ada.
+-- Menggunakan CHARACTER SET utf8mb4 dan COLLATE utf8mb4_unicode_ci untuk dukungan karakter yang lebih baik.
+CREATE DATABASE IF NOT EXISTS celengan_db
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+-- Menggunakan database 'celengan_db' untuk perintah selanjutnya.
+USE celengan_db;
+
+-- 1. Tabel Pengguna (users)
+-- Disesuaikan untuk autentikasi PIN: menyimpan pin_hash.
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,          -- Email sebagai identifier unik untuk login
+    pin_hash VARCHAR(255) NULL,                  -- Hash dari PIN pengguna (NULL jika PIN belum diatur)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- CATATAN: Tabel 'api_keys' tidak digunakan dalam sistem autentikasi berbasis PIN ini.
+-- Jika Anda sebelumnya membuat tabel 'api_keys', Anda bisa menghapusnya dengan:
+-- DROP TABLE IF EXISTS api_keys;
+
+-- 2. Tabel Target Tabungan (targets)
+-- Struktur tidak berubah, user_id merujuk ke pengguna yang diautentikasi via PIN + JWT.
+CREATE TABLE IF NOT EXISTS targets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    nama_target VARCHAR(255) NOT NULL,
+    jumlah_target DECIMAL(15, 2) NOT NULL,
+    jumlah_terkumpul DECIMAL(15, 2) DEFAULT 0.00,
+    tanggal_target DATE NULL,
+    status ENUM('aktif', 'tercapai', 'dibatalkan') DEFAULT 'aktif',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 3. Tabel Transaksi (transactions)
+-- Struktur tidak berubah, user_id dan target_id terkait dengan pengguna yang diautentikasi via PIN + JWT.
+CREATE TABLE IF NOT EXISTS transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    target_id INT NOT NULL,
+    user_id INT NOT NULL,
+    jenis_transaksi ENUM('deposit', 'penarikan_internal') NOT NULL DEFAULT 'deposit',
+    jumlah DECIMAL(15, 2) NOT NULL,
+    deskripsi VARCHAR(255) NULL,
+    tanggal_transaksi TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    payment_gateway_ref VARCHAR(255) NULL,
+    FOREIGN KEY (target_id) REFERENCES targets(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Pernyataan untuk konfirmasi (opsional)
+SELECT 'Struktur database celengan_db (Mode PIN) dan tabel-tabelnya telah berhasil diperiksa/dibuat.' AS Setup_Status_PIN_Mode;

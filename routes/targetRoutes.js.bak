@@ -1,0 +1,22 @@
+// celengan-api/routes/targetRoutes.js
+const express = require('express');
+const router = express.Router();
+const {
+    createTarget,
+    getUserTargets,
+    getTargetById,
+    updateTarget,
+    deleteTarget
+} = require('../controllers/targetController');
+const { apiKeyProtect } = require('../middleware/apiKeyAuthMiddleware'); // Ganti middleware
+
+router.route('/')
+    .post(apiKeyProtect, createTarget) // Gunakan apiKeyProtect
+    .get(apiKeyProtect, getUserTargets); // Gunakan apiKeyProtect
+
+router.route('/:id')
+    .get(apiKeyProtect, getTargetById)    // Gunakan apiKeyProtect
+    .put(apiKeyProtect, updateTarget)   // Gunakan apiKeyProtect
+    .delete(apiKeyProtect, deleteTarget); // Gunakan apiKeyProtect
+
+module.exports = router;
