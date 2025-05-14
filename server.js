@@ -7,9 +7,9 @@ dotenv.config();
 
 // 2. Impor modul-modul yang dibutuhkan
 const express = require('express');
-const cors = require('cors'); // Untuk menangani Cross-Origin Resource Sharing
+const cors = require('cors'); // Middleware untuk Cross-Origin Resource Sharing
 const path = require('path'); // Modul path bawaan Node.js
-const pool = require('./config/db'); // Impor pool untuk inisialisasi (opsional di sini, tapi baik untuk memastikan config db terpanggil)
+const pool = require('./config/db'); // Opsional di sini, tapi baik untuk memastikan config db terpanggil jika belum
 
 // Impor Modul Rute Anda
 // Pastikan file-file ini sudah ada dan dikonfigurasi dengan benar untuk sistem PIN + JWT
@@ -21,47 +21,52 @@ const transactionRoutes = require('./routes/transactionRoutes');
 const app = express();
 
 // 4. Konfigurasi CORS (Cross-Origin Resource Sharing)
-const whitelist = [`https://celengan.sgp.dom.my.id`]; // Domain frontend Anda
+// ==================================================
+// Whitelist berisi origin (domain) frontend yang diizinkan untuk mengakses backend ini.
+const whitelist = [`https://celengan.sgp.dom.my.id`];
 
-if (process.env.NODE_ENV !== 'production') {
-    // Izinkan localhost untuk pengembangan jika frontend juga dijalankan lokal
-    // Sesuaikan port frontend lokal Anda jika berbeda (misal 5173 untuk Vite, 3001 untuk create-react-app dev server)
-    whitelist.push('http://localhost:5173');
-    whitelist.push('http://localhost:3001');
-    whitelist.push('http://127.0.0.1:5173');
-    whitelist.push('http://127.0.0.1:3001'); // Tambahkan port frontend dev Anda jika perlu
-}
+// Untuk pengembangan lokal, Anda mungkin ingin menambahkan origin localhost frontend Anda
+// if (process.env.NODE_ENV !== 'production') {
+//     whitelist.push('http://localhost:PORT_FRONTEND_ANDA'); // Ganti PORT_FRONTEND_ANDA
+//     whitelist.push('http://127.0.0.1:PORT_FRONTEND_ANDA');
+// }
 
 const corsOptions = {
     origin: function (origin, callback) {
+        // Izinkan request jika origin ada di whitelist
+        // Juga izinkan request tanpa origin (misalnya, dari Postman, aplikasi mobile, atau curl saat pengujian)
         if (!origin || whitelist.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            console.warn(`CORS: Akses dari origin ${origin} ditolak oleh konfigurasi CORS.`);
+            console.warn(`CORS: Akses dari origin ${origin} ditolak oleh konfigurasi.`);
             callback(new Error('Origin ini tidak diizinkan oleh kebijakan CORS server.'));
         }
     },
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: "Content-Type,Authorization,X-Requested-With",
-    credentials: true,
-    optionsSuccessStatus: 200
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Metode HTTP yang diizinkan
+    allowedHeaders: "Content-Type,Authorization,X-Requested-With", // Header yang diizinkan (Authorization penting untuk JWT)
+    credentials: true, // Izinkan pengiriman cookies atau header Authorization
+    optionsSuccessStatus: 200 // Beberapa browser lama mungkin bermasalah dengan default 204 untuk preflight request
 };
 
-app.use(cors(corsOptions));
+app.use(cors(corsOptions)); // Terapkan konfigurasi CORS ke semua rute
+// ==================================================
 
 // 5. Middleware Global Lainnya
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json()); // Untuk mem-parsing body request dengan format JSON
+app.use(express.urlencoded({ extended: false })); // Untuk mem-parsing body request dengan format URL-encoded
 
 // 6. Middleware untuk Menyajikan File Statis dari folder 'public'
+// Berguna jika Anda ingin backend menyajikan frontend Anda (index.html, css, js).
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 7. Gunakan Modul Rute API
+// Semua permintaan ke /api/auth akan ditangani oleh authRoutes, dst.
+// Pastikan di dalam file-file rute ini, middleware 'protect' (JWT) dan rate-limiter (untuk login PIN) sudah diterapkan dengan benar.
 app.use('/api/auth', authRoutes);
 app.use('/api/targets', targetRoutes);
 app.use('/api/transactions', transactionRoutes);
 
-// 8. Rute Dasar untuk API (Opsional, untuk tes)
+// 8. Rute Dasar untuk API (Opsional, untuk tes cepat)
 app.get('/api', (req, res) => {
     res.json({
         message: 'Selamat Datang di Celengan API!',
@@ -71,49 +76,48 @@ app.get('/api', (req, res) => {
     });
 });
 
-// 9. Penanganan Rute Frontend (Untuk SPA)
+// 9. Penanganan Rute Frontend (Untuk Single Page Application - SPA)
+// Jika Anda tidak membuat SPA yang kompleks, bagian ini bisa diabaikan atau disesuaikan.
 // Pastikan ini diletakkan SETELAH semua rute API Anda.
 app.get('*', (req, res) => {
+    // Hanya kirim index.html jika request BUKAN untuk API
     if (!req.path.startsWith('/api/')) {
         const indexPath = path.join(__dirname, 'public', 'index.html');
         if (require('fs').existsSync(indexPath)) {
             res.sendFile(indexPath);
         } else {
-            // Jika index.html tidak ada, kirim pesan yang lebih informatif daripada error default
-            res.status(404).send('Halaman frontend (index.html) tidak ditemukan di folder public. Pastikan file tersebut ada.');
+            res.status(404).send('Halaman frontend (index.html) tidak ditemukan di folder public. Pastikan file tersebut ada dan path static serving sudah benar.');
         }
     } else {
-        // Jika path dimulai dengan /api tapi tidak cocok dengan rute API di atas,
-        // Express akan otomatis mengirim 404 atau biarkan middleware error di bawah menangani.
-        // Memberikan respons JSON untuk endpoint API yang tidak ditemukan lebih baik.
+        // Jika request adalah untuk /api tapi tidak ada rute yang cocok, kirim 404 JSON
         res.status(404).json({ message: `Endpoint API '${req.path}' tidak ditemukan.` });
     }
 });
 
+
 // 10. Middleware Error Handling Global Sederhana
+// Akan menangkap semua error yang tidak tertangani oleh rute spesifik.
 app.use((err, req, res, next) => {
     console.error("!! Terjadi Error Tidak Tertangani di Server !!");
     console.error("Pesan Error:", err.message);
-    // Jangan kirim stack trace ke klien di mode produksi untuk keamanan
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== 'production') { // Hanya tampilkan stack di mode development
         console.error("Stack Trace:", err.stack);
     }
     
     const status = err.status || 500;
+    // Di produksi, jangan kirim pesan error teknis ke klien untuk error 500
     const responseMessage = (process.env.NODE_ENV === 'production' && status === 500)
                           ? 'Terjadi kesalahan internal pada server.' 
                           : err.message || 'Terjadi kesalahan pada server.';
     
     res.status(status).json({
         message: responseMessage,
-        // Hanya sertakan stack di pengembangan jika eksplisit diinginkan dan bukan error sensitif
-        // stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined 
     });
 });
 
 // 11. Jalankan Server
 const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || '0.0.0.0'; // Mendengarkan pada semua antarmuka jaringan
+const HOST = process.env.HOST || '0.0.0.0'; // Penting untuk Railway dan platform serupa
 
 app.listen(PORT, HOST, () => {
     console.log(`\n🚀 Server Backend Celengan Digital Anda Berhasil Dijalankan! 🚀`);
@@ -133,17 +137,14 @@ app.listen(PORT, HOST, () => {
     console.log(`        (Untuk menemukan IP Lokal: 'ipconfig' di Windows, 'ifconfig' atau 'ip addr' di Linux/macOS)`);
     console.log(``);
     console.log(`     ☁️  Akses dari Publik (Jika server Anda memiliki IP Publik/domain & port terbuka):`);
-    console.log(`        HTTP  : http://[IP_PUBLIK_SERVER_ANDA_ATAU_NAMA_DOMAIN]:${PORT}`);
-    console.log(`        Contoh : http://138.2.103.58:${PORT} (jika ini IP publik server Anda dan port ${PORT} terbuka)`);
+    console.log(`        URL Anda: https://celengan.up.railway.app (Railway biasanya menangani port publik 80/443)`);
     console.log(``);
     console.log(`  ✨ Endpoint API Utama biasanya ada di /api`);
-    console.log(`     Contoh: http://localhost:${PORT}/api/auth/profile (jika diuji lokal)`);
+    console.log(`     Contoh: https://celengan.up.railway.app/api/auth/profile`);
     console.log(`-----------------------------------------------------------------`);
-    console.log(`  PENTING:`);
-    console.log(`  ➡️ Jika frontend Anda berjalan di HTTPS (misalnya https://celengan.sgp.dom.my.id/),`);
-    console.log(`     maka backend ini juga HARUS berjalan di HTTPS untuk menghindari error "Mixed Content".`);
-    console.log(`     Konfigurasi HTTPS di Node.js/Express memerlukan sertifikat SSL dan penanganan tambahan.`);
-    console.log(`  ➡️ Pastikan firewall (jika ada) di server Anda mengizinkan koneksi masuk ke port ${PORT}.`);
-    console.log(`  ➡️ Jika \`API_BASE_URL\` di frontend Anda adalah domain publik, backend ini juga harus bisa diakses dari publik.`);
+    console.log(`  PENTING untuk https://celengan.sgp.dom.my.id/:`);
+    console.log(`  ➡️ Backend Anda di https://celengan.up.railway.app/ HARUS berjalan di HTTPS.`);
+    console.log(`  ➡️ Konfigurasi CORS di atas sudah mencoba mengizinkan https://celengan.sgp.dom.my.id/.`);
+    console.log(`  ➡️ Pastikan semua variabel lingkungan (DB, JWT_SECRET) sudah diatur dengan benar di Railway.`);
     console.log(`-----------------------------------------------------------------\n`);
 });
