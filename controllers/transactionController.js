@@ -115,12 +115,13 @@ const initiateQrisPayment = async (req, res) => {
         const pData = panzngenResponse.data;
 
         if (pData && pData.status === true && pData.result && pData.result.transactionId) {
-            const panzngenTransactionId = pData.result.transactionId;
+            const panzngenTransactionId = pData.result.transactionId; 
             const qrDataForDisplay = pData.result.qrImageUrl;
 
             console.log(`[QRIS INITIATE] PanzNgen Transaction ID (disimpan sbg panzngen_keyorkut): ${panzngenTransactionId}`);
-            console.log(`[QRIS INITIATE] PanzNgen QR Image URL: ${qrDataForDisplay}`);
+            console.log(`[QRIS INITIATE] PanzNgen QR Image URL (disimpan sbg panzngen_payment_data): ${qrDataForDisplay}`);
             
+            // Log semua field di dalam pData.result untuk membantu identifikasi
             Object.keys(pData.result).forEach(key => {
                 console.log(`[QRIS INITIATE] PanzNgen pData.result.${key} = ${pData.result[key]}`);
             });
@@ -133,7 +134,7 @@ const initiateQrisPayment = async (req, res) => {
             res.status(201).json({
                 message: 'Permintaan pembayaran QRIS berhasil dibuat. Silakan selesaikan pembayaran.',
                 ourTransactionRef: ourTransactionRef,
-                panzngenTransactionId: panzngenTransactionId,
+                panzngenTransactionId: panzngenTransactionId, // Kirim ID ini ke frontend
                 qrData: qrDataForDisplay,
                 paymentDetails: pData.result
             });
@@ -156,21 +157,20 @@ const initiateQrisPayment = async (req, res) => {
     }
 };
 
-// @desc    Check QRIS payment status using Decode Rerezz API
+// @desc    Check QRIS payment status using Okeconnect Mutasi API
 // @route   GET /api/transactions/qris/status/:ourTransactionRef
 // @access  Private
 const checkQrisPaymentStatus = async (req, res) => {
     const { ourTransactionRef } = req.params;
     const user_id = req.user.id;
 
-    const decodeStatusUrl = process.env.DECODE_REREZZ_STATUS_URL;
-    const decodeApiKey = process.env.DECODE_REREZZ_API_KEY;
-    const decodeMemid = process.env.DECODE_REREZZ_MEMID;
-    const okeconnectKeyForRerezz = process.env.OKECONNECT_KEY_FOR_REREZZ; // "apikey dari okeconnect"
+    const okeconnectBaseUrl = process.env.OKECONNECT_MUTASI_BASE_URL;
+    const okeconnectMemberId = process.env.OKECONNECT_MEMBER_ID;
+    const okeconnectSignatureKey = process.env.OKECONNECT_SIGNATURE_KEY; // Ini "keyorkut dari Okeconnect" yang statis
 
-    if (!decodeStatusUrl || !decodeApiKey || !decodeMemid || !okeconnectKeyForRerezz) {
-        console.error("KRITIKAL: Konfigurasi API Decode Rerezz (URL, API Key, MEMID, atau Okeconnect Key) tidak lengkap di .env");
-        return res.status(500).json({ message: "Layanan pengecekan status pembayaran tidak terkonfigurasi dengan benar (Decode Rerezz)." });
+    if (!okeconnectBaseUrl || !okeconnectMemberId || !okeconnectSignatureKey) {
+        console.error("KRITIKAL: Konfigurasi API Okeconnect (URL, MemberID, atau Signature Key) tidak lengkap di .env");
+        return res.status(500).json({ message: "Layanan pengecekan status pembayaran tidak terkonfigurasi (Okeconnect)." });
     }
 
     try {
@@ -180,59 +180,96 @@ const checkQrisPaymentStatus = async (req, res) => {
         );
 
         if (attempts.length === 0) {
-            return res.status(404).json({ message: 'Referensi transaksi tidak ditemukan atau bukan milik Anda.' });
+            return res.status(404).json({ message: 'Referensi transaksi internal tidak ditemukan atau bukan milik Anda.' });
         }
-        const attempt = attempts[0]; // Ini berisi `panzngen_keyorkut` (yang adalah transactionId dari PanzNGen)
+        const attempt = attempts[0]; // attempt.panzngen_keyorkut berisi ID transaksi dari PanzNGen
 
-        if (['SUCCESS', 'FAILED', 'EXPIRED'].includes(attempt.status)) {
-            return res.json({ message: `Status pembayaran adalah ${attempt.status}.`, status: attempt.status, ourTransactionRef: attempt.our_transaction_ref, amount: attempt.amount });
+        if (attempt.status === 'SUCCESS') {
+            return res.json({ message: `Pembayaran sudah BERHASIL.`, status: 'SUCCESS', ourTransactionRef: attempt.our_transaction_ref, amount: attempt.amount });
+        }
+        if (attempt.status === 'FAILED' || attempt.status === 'EXPIRED') {
+             return res.json({ message: `Status pembayaran adalah ${attempt.status}.`, status: attempt.status, ourTransactionRef: attempt.our_transaction_ref, amount: attempt.amount });
         }
 
-        if (!attempt.panzngen_keyorkut) {
-             return res.status(400).json({ message: 'Data pembayaran tidak lengkap (ID Transaksi PanzNGen hilang untuk referensi ini).' });
+        if (!attempt.panzngen_keyorkut) { // Ini adalah PanzNgen Transaction ID
+             return res.status(400).json({ message: 'Data pembayaran tidak lengkap (ID Transaksi PanzNGen hilang untuk referensi internal ini).' });
         }
 
-        // --- MEMBANGUN PARAMETER UNTUK DECODE REREZZ ---
-        const paramsToDecodeRerezz = {
-            memid: decodeMemid,
-            keyorkut: okeconnectKeyForRerezz, // Menggunakan "apikey dari okeconnect" dari .env
-            apikey: decodeApiKey,             // API Key untuk layanan Decode Rerezz
-            
-            // !! ================================================================================= !!
-            // !! PENTING: ANDA PERLU TAHU NAMA PARAMETER YANG BENAR UNTUK MENGIRIM ID TRANSAKSI    !!
-            // !!          PANZNGEN (`attempt.panzngen_keyorkut`) KE API DECODE REREZZ.             !!
-            // !!          GANTI 'NAMA_PARAMETER_TRANSAKSI_ID_PANZNGEN' DI BAWAH INI.               !!
-            // !! CONTOH: jika parameternya 'order_id' atau 'ref_id' atau 'transaction_id'         !!
-            // !! ================================================================================= !!
-            NAMA_PARAMETER_TRANSAKSI_ID_PANZNGEN: attempt.panzngen_keyorkut
-        };
+        // URL untuk Okeconnect: https://gateway.okeconnect.com/api/mutasi/qris/{memberID}/{signature}
+        const okeconnectStatusUrl = `${okeconnectBaseUrl}/${okeconnectMemberId}/${okeconnectSignatureKey}`;
         
-        console.log(`[QRIS STATUS] Memanggil Decode Rerezz Cek Status: URL=${decodeStatusUrl}, Params=`, JSON.stringify(paramsToDecodeRerezz));
-        const statusResponse = await axios.get(decodeStatusUrl, { params: paramsToDecodeRerezz });
-        console.log("[QRIS STATUS] Respons MENTAH dari Decode Rerezz /cekstatus:", JSON.stringify(statusResponse.data, null, 2));
+        console.log(`[QRIS STATUS] Memanggil Okeconnect Mutasi API: URL=${okeconnectStatusUrl}`);
+        // Berdasarkan contoh URL Anda, API Okeconnect ini tidak memerlukan parameter query tambahan untuk memanggil daftar mutasi.
+        // Autentikasi sepertinya dari kombinasi memberID dan signature di path.
+        const okeconnectResponse = await axios.get(okeconnectStatusUrl);
+        console.log("[QRIS STATUS] Respons MENTAH dari Okeconnect Mutasi API:", JSON.stringify(okeconnectResponse.data, null, 2));
 
-        let paymentStatus = 'PENDING';
-        const rData = statusResponse.data;
-        // Sesuaikan parsing status berdasarkan respons aktual Decode Rerezz
-        if (rData && (rData.status === 200 || rData.success === true || (typeof rData.status === 'boolean' && rData.status)) && rData.data && rData.data.status_transaksi) {
-            paymentStatus = rData.data.status_transaksi.toUpperCase();
-        } else if (rData && rData.message) {
-            console.warn("[QRIS STATUS] Pesan/error dari Decode Rerezz saat cek status:", rData.message);
-            if (rData.message.toLowerCase().includes("gagal mengambil data transaksi") || rData.message.toLowerCase().includes("tidak ditemukan")) {
-                paymentStatus = 'FAILED';
+        let paymentStatus = 'PENDING'; // Default jika tidak ditemukan atau belum selesai
+        const okeData = okeconnectResponse.data;
+
+        if (okeData && okeData.status && okeData.status.toLowerCase() === 'success' && Array.isArray(okeData.data)) {
+            const matchedTransaction = okeData.data.find(trx => {
+                // --- KRITERIA PENCOCOKAN (PERLU ANDA VERIFIKASI DAN SESUAIKAN!) ---
+                const isAmountMatch = parseFloat(trx.amount) === parseFloat(attempt.amount);
+                const isTypeMatch = trx.type && trx.type.toUpperCase() === 'CR'; // CR untuk Credit (dana masuk)
+
+                // PENTING: Field mana di `trx` (data dari Okeconnect) yang berisi ID Transaksi PanzNgen?
+                // Ganti `trx.issuer_reff` dengan field yang benar jika berbeda.
+                // Mungkin 'trx.reference_no', 'trx.notes', 'trx.description', atau field lain yang unik.
+                const isPanzngenIdMatch = trx.issuer_reff === attempt.panzngen_keyorkut; 
+                
+                // Pertimbangkan juga mencocokkan berdasarkan rentang waktu yang sangat dekat jika perlu,
+                // tapi pencocokan ID Transaksi PanzNgen adalah yang paling akurat.
+                // const transactionDate = new Date(trx.date);
+                // const attemptDate = new Date(attempt.created_at);
+                // const isRecent = Math.abs(transactionDate.getTime() - attemptDate.getTime()) < (10 * 60 * 1000); // misal dalam 10 menit
+
+                if (isAmountMatch && isTypeMatch && isPanzngenIdMatch) {
+                    console.log(`[QRIS STATUS] Transaksi COCOK ditemukan di mutasi Okeconnect:`, trx);
+                    return true;
+                }
+                return false;
+            });
+
+            if (matchedTransaction) {
+                paymentStatus = 'SUCCESS';
+            } else {
+                console.log(`[QRIS STATUS] Transaksi untuk ref ${ourTransactionRef} (PanzNgen ID: ${attempt.panzngen_keyorkut}, Amount: ${attempt.amount}) belum ditemukan/cocok di mutasi Okeconnect.`);
+                paymentStatus = 'PENDING';
+            }
+        } else if (okeData && okeData.message) {
+            console.warn("[QRIS STATUS] Pesan/error dari Okeconnect saat mengambil mutasi:", okeData.message);
+            if (okeData.message.toLowerCase().includes("gagal mengambil data transaksi") || okeData.message.toLowerCase().includes("tidak ditemukan")) {
+                paymentStatus = 'FAILED'; // Jika Okeconnect secara eksplisit bilang gagal atau tidak ditemukan
+            } else {
+                paymentStatus = 'PENDING'; // Jika pesan error lain, anggap pending untuk dicek lagi
             }
         } else {
-            console.warn("[QRIS STATUS] Format respons tidak dikenal dari Decode Rerezz Cek Status.");
+            console.warn("[QRIS STATUS] Format respons tidak dikenal dari Okeconnect Mutasi API.");
+            paymentStatus = 'PENDING'; // Jika format tidak jelas, anggap PENDING
         }
 
-        await pool.query(
-            'UPDATE qris_payment_attempts SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            [paymentStatus, attempt.id]
-        );
+        // Update status di database kita hanya jika ada perubahan atau belum final dan bukan success dari DB
+        if (paymentStatus !== attempt.status || paymentStatus === 'PENDING') {
+             if (attempt.status !== 'SUCCESS') { // Jangan update jika di DB sudah SUCCESS
+                await pool.query(
+                    'UPDATE qris_payment_attempts SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    [paymentStatus, attempt.id]
+                );
+            } else if (attempt.status === 'SUCCESS' && paymentStatus !== 'SUCCESS') {
+                // Ini kondisi aneh, di DB sudah SUCCESS tapi API bilang lain. Log dan jangan ubah.
+                console.warn(`[QRIS STATUS] Aneh: Status di DB sudah SUCCESS untuk ${ourTransactionRef}, tapi API Okeconnect mengembalikan ${paymentStatus}. Tidak mengubah status.`);
+                paymentStatus = 'SUCCESS'; // Pertahankan status SUCCESS dari DB
+            }
+        }
+
 
         if (paymentStatus === 'SUCCESS') {
-            const depositDescription = `QRIS Deposit (Ref: ${attempt.our_transaction_ref}, PanzNgenTrxID: ${attempt.panzngen_keyorkut})`;
-            await confirmTargetDeposit(attempt.user_id, attempt.target_id, attempt.amount, depositDescription, attempt.our_transaction_ref);
+            // Hanya panggil confirmTargetDeposit jika status sebelumnya BUKAN SUCCESS, untuk menghindari duplikasi.
+            if (attempt.status !== 'SUCCESS') {
+                const depositDescription = `QRIS Deposit via Okeconnect (Ref: ${attempt.our_transaction_ref}, PanzNgenTrxID: ${attempt.panzngen_keyorkut})`;
+                await confirmTargetDeposit(attempt.user_id, attempt.target_id, attempt.amount, depositDescription, attempt.our_transaction_ref);
+            }
             return res.json({ message: 'Pembayaran QRIS berhasil dan deposit telah dicatat!', status: paymentStatus, ourTransactionRef: attempt.our_transaction_ref, amount: attempt.amount });
         } else {
             return res.json({ message: `Status pembayaran saat ini: ${paymentStatus}.`, status: paymentStatus, ourTransactionRef: attempt.our_transaction_ref });
@@ -240,10 +277,10 @@ const checkQrisPaymentStatus = async (req, res) => {
 
     } catch (error) {
         const errorDetails = error.response ? JSON.stringify(error.response.data) : error.message;
-        console.error('[QRIS STATUS] Error saat cek status pembayaran QRIS:', errorDetails);
+        console.error('[QRIS STATUS] Error saat cek status pembayaran QRIS via Okeconnect:', errorDetails);
         const errorMessage = (error.response && error.response.data && error.response.data.message)
                            ? error.response.data.message
-                           : error.message || 'Gagal memeriksa status pembayaran QRIS.';
+                           : error.message || 'Gagal memeriksa status pembayaran QRIS via Okeconnect.';
         res.status(500).json({ message: errorMessage });
     }
 };
