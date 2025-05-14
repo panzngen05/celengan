@@ -1,38 +1,24 @@
 // celengan-api/controllers/transactionController.js
+
 const pool = require('../config/db');
-const axios = require('axios');
-const crypto = require('crypto');
+const axios = require('axios'); // Untuk memanggil API eksternal
+const crypto = require('crypto'); // Untuk generate ID unik internal jika diperlukan
 const { confirmTargetDeposit } = require('../services/paymentService'); // Pastikan path ini benar
 
-// ... (fungsi makeManualDeposit dan getUserTransactions tetap sama seperti sebelumnya) ...
-const makeManualDeposit = async (req, res) => { /* ... implementasi sebelumnya ... */
-    const { target_id, jumlah, deskripsi } = req.body;
-    const user_id = req.user.id;
-
-    if (!target_id || !jumlah || parseFloat(jumlah) <= 0) {
-        return res.status(400).json({ message: 'Target ID dan jumlah deposit (positif) diperlukan' });
-    }
-
-    try {
-        const paymentRef = `MANUAL-${crypto.randomBytes(8).toString('hex')}`;
-        const result = await confirmTargetDeposit(user_id, target_id, jumlah, deskripsi || 'Manual deposit', paymentRef);
-        res.status(201).json(result);
-    } catch (error) {
-        console.error("Error pada makeManualDeposit:", error);
-        res.status(500).json({ message: error.message || 'Server error processing manual deposit' });
-    }
-};
-
-const getUserTransactions = async (req, res) => { /* ... implementasi sebelumnya ... */
-    const user_id = req.user.id;
+// @desc    Get all transactions for the logged-in user with filtering and pagination
+// @route   GET /api/transactions
+// @access  Private (requires JWT)
+const getUserTransactions = async (req, res) => {
+    const user_id = req.user.id; // Diambil dari middleware 'protect' (JWT)
     const { target_id, jenis_transaksi, start_date, end_date } = req.query;
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const offset = (page - 1) * limit;
 
     let query = `
-        SELECT t.id, t.target_id, tg.nama_target, t.jenis_transaksi, t.jumlah, 
-               t.deskripsi, t.tanggal_transaksi, t.payment_gateway_ref 
+        SELECT 
+            t.id, t.target_id, tg.nama_target, t.jenis_transaksi, t.jumlah, 
+            t.deskripsi, t.tanggal_transaksi, t.payment_gateway_ref 
         FROM transactions t 
         JOIN targets tg ON t.target_id = tg.id 
         WHERE t.user_id = ?`;
@@ -66,14 +52,32 @@ const getUserTransactions = async (req, res) => { /* ... implementasi sebelumnya
     }
 };
 
+// @desc    Make a manual deposit (misalnya admin confirmation, bukan via payment gateway otomatis)
+// @route   POST /api/transactions/deposit-manual
+// @access  Private
+const makeManualDeposit = async (req, res) => {
+    const { target_id, jumlah, deskripsi } = req.body;
+    const user_id = req.user.id;
 
-// --- Fungsi Baru/Modifikasi untuk QRIS ---
+    if (!target_id || !jumlah || parseFloat(jumlah) <= 0) {
+        return res.status(400).json({ message: 'Target ID dan jumlah deposit (positif) diperlukan' });
+    }
+
+    try {
+        const paymentRef = `MANUAL-${user_id}-${Date.now()}`;
+        const result = await confirmTargetDeposit(user_id, parseInt(target_id), parseFloat(jumlah), deskripsi || 'Deposit manual', paymentRef);
+        res.status(201).json(result);
+    } catch (error) {
+        // confirmTargetDeposit sudah melakukan console.error
+        res.status(500).json({ message: error.message || 'Server error processing manual deposit' });
+    }
+};
 
 // @desc    Initiate QRIS payment using PanzNgen API
 // @route   POST /api/transactions/qris/initiate
 // @access  Private
 const initiateQrisPayment = async (req, res) => {
-    const { target_id, amount } = req.body; // Ambil amount dari request body
+    const { target_id, amount } = req.body;
     const user_id = req.user.id;
 
     if (!target_id || !amount || parseFloat(amount) <= 0) {
@@ -82,10 +86,9 @@ const initiateQrisPayment = async (req, res) => {
 
     const ourTransactionRef = `QRIS-${user_id}-${target_id}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
     
-    // Ambil konfigurasi dari .env
     const panzngenCreateUrl = process.env.PANZNGEN_CREATE_PAYMENT_URL;
     const panzngenApiKey = process.env.PANZNGEN_API_KEY;
-    const panzngenMerchantQrPayload = process.env.PANZNGEN_MERCHANT_QR_PAYLOAD; // Ini adalah string QRIS panjang dari .env
+    const panzngenMerchantQrPayload = process.env.PANZNGEN_MERCHANT_QR_PAYLOAD;
 
     if (!panzngenCreateUrl || !panzngenApiKey || !panzngenMerchantQrPayload) {
         console.error("Konfigurasi PanzNGen API (URL, API Key, atau QR Payload) tidak lengkap di .env");
@@ -96,49 +99,50 @@ const initiateQrisPayment = async (req, res) => {
         const params = {
             apikey: panzngenApiKey,
             amount: parseFloat(amount),
-            codeqr: panzngenMerchantQrPayload, // Menggunakan QR payload dari .env
+            codeqr: panzngenMerchantQrPayload,
         };
 
         console.log(`Memanggil PanzNGen Create Payment: URL=${panzngenCreateUrl}, Params=`, params);
         const panzngenResponse = await axios.get(panzngenCreateUrl, { params });
-        console.log("Respons dari PanzNGen Create Payment:", panzngenResponse.data);
+        console.log("Respons dari PanzNGen Create Payment:", JSON.stringify(panzngenResponse.data, null, 2));
 
-        // Asumsi respons PanzNGen:
-        // Jika sukses: { "status": 200, "message": "success", "data": { "keyorkut": "...", "qr_string": "...", ...lainnya } }
-        // Jika gagal: { "status": 400/dll, "message": "error message" }
-        // Sesuaikan kondisi di bawah ini dengan struktur respons aktual PanzNGen Anda
-        if (panzngenResponse.data && (panzngenResponse.data.status === 200 || panzngenResponse.data.success === true) && panzngenResponse.data.data && panzngenResponse.data.data.keyorkut) {
-            const { keyorkut } = panzngenResponse.data.data;
-            // qr_string bisa jadi adalah panzngenMerchantQrPayload itu sendiri jika PanzNGen tidak mengembalikannya,
-            // atau PanzNGen mengembalikan qr_string yang sudah dimodifikasi/dinamis.
-            // Untuk amannya, kita simpan apa yang kita punya atau apa yang dikembalikan PanzNGen.
-            const qrDataForDisplay = panzngenResponse.data.data.qr_string || panzngenResponse.data.data.qrcode || panzngenMerchantQrPayload;
+        // Struktur respons PanzNGen yang diharapkan (berdasarkan log pengguna):
+        // {"status":true,"creator":"PanzNgen","result":{"transactionId":"...", "qrImageUrl":"..."}}
+        if (panzngenResponse.data && panzngenResponse.data.status === true && panzngenResponse.data.result && panzngenResponse.data.result.transactionId) {
+            
+            const panzngenTransactionId = panzngenResponse.data.result.transactionId;
+            const qrDataForDisplay = panzngenResponse.data.result.qrImageUrl;
 
             await pool.query(
                 'INSERT INTO qris_payment_attempts (user_id, target_id, amount, panzngen_keyorkut, panzngen_payment_data, status, our_transaction_ref) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [user_id, target_id, parseFloat(amount), keyorkut, qrDataForDisplay, 'PENDING', ourTransactionRef]
+                [user_id, parseInt(target_id), parseFloat(amount), panzngenTransactionId, qrDataForDisplay, 'PENDING', ourTransactionRef]
             );
 
             res.status(201).json({
                 message: 'Permintaan pembayaran QRIS berhasil dibuat. Silakan selesaikan pembayaran.',
-                ourTransactionRef: ourTransactionRef, // ID internal kita
-                keyorkut: keyorkut, // ID dari PanzNGen, untuk cek status
-                qrData: qrDataForDisplay, // Data QR untuk ditampilkan di frontend
-                // paymentDetails: panzngenResponse.data.data // Opsional: kirim semua detail jika perlu
+                ourTransactionRef: ourTransactionRef,
+                keyorkut: panzngenTransactionId,
+                qrData: qrDataForDisplay,
+                paymentDetails: panzngenResponse.data.result
             });
         } else {
-            // Jika PanzNGen mengembalikan status gagal atau format tidak sesuai
-            const panzngenErrorMessage = panzngenResponse.data ? (panzngenResponse.data.message || JSON.stringify(panzngenResponse.data)) : 'Respons tidak diketahui dari PanzNGen.';
+            const panzngenErrorMessage = panzngenResponse.data ? (panzngenResponse.data.message || JSON.stringify(panzngenResponse.data)) : 'Respons tidak dikenal dari PanzNGen.';
             console.error("PanzNGen mengembalikan error atau format tidak dikenal:", panzngenErrorMessage);
             throw new Error(`Gagal membuat pembayaran QRIS di PanzNGen: ${panzngenErrorMessage}`);
         }
 
     } catch (error) {
-        console.error('Error saat inisiasi pembayaran QRIS:', error.response ? JSON.stringify(error.response.data) : error.message);
-        const errorMessage = (error.response && error.response.data && error.response.data.message)
-                           ? error.response.data.message
-                           : error.message || 'Gagal memproses permintaan pembayaran QRIS.';
-        res.status(500).json({ message: errorMessage });
+        const errorDetails = error.response ? JSON.stringify(error.response.data) : error.message;
+        console.error('Error saat inisiasi pembayaran QRIS:', errorDetails);
+        
+        let clientErrorMessage = 'Gagal memproses permintaan pembayaran QRIS.';
+        if (error.message && error.message.startsWith('Gagal membuat pembayaran QRIS di PanzNGen:')) {
+            clientErrorMessage = error.message;
+        } else if (error.response && error.response.data && error.response.data.message) {
+            clientErrorMessage = error.response.data.message;
+        }
+        
+        res.status(500).json({ message: clientErrorMessage });
     }
 };
 
@@ -149,14 +153,13 @@ const checkQrisPaymentStatus = async (req, res) => {
     const { ourTransactionRef } = req.params;
     const user_id = req.user.id;
 
-    // Ambil konfigurasi dari .env
     const decodeStatusUrl = process.env.DECODE_REREZZ_STATUS_URL;
     const decodeApiKey = process.env.DECODE_REREZZ_API_KEY;
     const decodeMemid = process.env.DECODE_REREZZ_MEMID;
 
     if (!decodeStatusUrl || !decodeApiKey || !decodeMemid) {
         console.error("Konfigurasi API Decode Rerezz (URL, API Key, atau MEMID) tidak lengkap di .env");
-        return res.status(500).json({ message: "Layanan pengecekan status pembayaran tidak terkonfigurasi dengan benar." });
+        return res.status(500).json({ message: "Layanan pengecekan status pembayaran tidak terkonfigurasi." });
     }
 
     try {
@@ -180,27 +183,23 @@ const checkQrisPaymentStatus = async (req, res) => {
 
         const params = {
             memid: decodeMemid,
-            keyorkut: attempt.panzngen_keyorkut, // Ini adalah ID transaksi dari PanzNGen
+            keyorkut: attempt.panzngen_keyorkut,
             apikey: decodeApiKey,
         };
         
         console.log(`Memanggil Decode Rerezz Cek Status: URL=${decodeStatusUrl}, Params=`, params);
         const statusResponse = await axios.get(decodeStatusUrl, { params });
-        console.log("Respons dari Decode Rerezz Cek Status:", statusResponse.data);
+        console.log("Respons dari Decode Rerezz Cek Status:", JSON.stringify(statusResponse.data, null, 2));
 
-        // Asumsi respons Decode Rerezz:
-        // Jika sukses: { "status": 200, "message": "success", "data": { "status_transaksi": "SUCCESS" / "PENDING" / "FAILED", ... } }
-        // Sesuaikan kondisi di bawah ini dengan struktur respons aktual Decode Rerezz Anda
+        // Asumsi struktur respons Decode Rerezz, sesuaikan jika perlu:
+        // {"status":200,"message":"success","data":{"status_transaksi":"SUCCESS", ...}}
         let paymentStatus = 'PENDING'; // Default
-        if (statusResponse.data && (statusResponse.data.status === 200 || statusResponse.data.success === true) && statusResponse.data.data && statusResponse.data.data.status_transaksi) {
+        if (statusResponse.data && (statusResponse.data.status === 200 || statusResponse.data.success === true || typeof statusResponse.data.status === 'boolean' && statusResponse.data.status) && statusResponse.data.data && statusResponse.data.data.status_transaksi) {
             paymentStatus = statusResponse.data.data.status_transaksi.toUpperCase();
         } else if (statusResponse.data && statusResponse.data.message) {
-            // Jika ada pesan error dari Decode Rerezz, mungkin status tetap PENDING atau FAILED
-            console.warn("Pesan dari Decode Rerezz saat cek status:", statusResponse.data.message);
-            // Anda mungkin ingin memetakan pesan error ini ke status yang lebih spesifik jika perlu
+            console.warn("Pesan/error dari Decode Rerezz saat cek status:", statusResponse.data.message);
         } else {
             console.warn("Format respons tidak dikenal dari Decode Rerezz Cek Status.");
-            // Pertahankan status PENDING atau FAILED jika respons tidak jelas
         }
 
         await pool.query(
@@ -209,7 +208,7 @@ const checkQrisPaymentStatus = async (req, res) => {
         );
 
         if (paymentStatus === 'SUCCESS') {
-            const depositDescription = `QRIS Deposit via PanzNGen, Ref: ${attempt.our_transaction_ref}, KeyOrkut: ${attempt.panzngen_keyorkut}`;
+            const depositDescription = `QRIS Deposit (Ref: ${attempt.our_transaction_ref})`;
             await confirmTargetDeposit(attempt.user_id, attempt.target_id, attempt.amount, depositDescription, attempt.our_transaction_ref);
             return res.json({ message: 'Pembayaran QRIS berhasil dan deposit telah dicatat!', status: paymentStatus, ourTransactionRef: attempt.our_transaction_ref, amount: attempt.amount });
         } else {
@@ -217,7 +216,8 @@ const checkQrisPaymentStatus = async (req, res) => {
         }
 
     } catch (error) {
-        console.error('Error saat cek status pembayaran QRIS:', error.response ? JSON.stringify(error.response.data) : error.message);
+        const errorDetails = error.response ? JSON.stringify(error.response.data) : error.message;
+        console.error('Error saat cek status pembayaran QRIS:', errorDetails);
         const errorMessage = (error.response && error.response.data && error.response.data.message)
                            ? error.response.data.message
                            : error.message || 'Gagal memeriksa status pembayaran QRIS.';
