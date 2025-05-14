@@ -1,8 +1,8 @@
 // celengan-api/controllers/transactionController.js
 
 const pool = require('../config/db');
-const axios = require('axios'); // Untuk memanggil API eksternal
-const crypto = require('crypto'); // Untuk generate ID unik internal jika diperlukan
+const axios = require('axios'); // Untuk memanggil API eksternal (QRIS)
+const crypto = require('crypto'); // Untuk generate ID unik internal jika diperlukan (QRIS)
 const { confirmTargetDeposit } = require('../services/paymentService'); // Pastikan path ini benar
 
 // @desc    Get all transactions for the logged-in user with filtering and pagination
@@ -10,6 +10,7 @@ const { confirmTargetDeposit } = require('../services/paymentService'); // Pasti
 // @access  Private (requires JWT)
 const getUserTransactions = async (req, res) => {
     const user_id = req.user.id; // Diambil dari middleware 'protect' (JWT)
+
     const { target_id, jenis_transaksi, start_date, end_date } = req.query;
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
@@ -17,20 +18,48 @@ const getUserTransactions = async (req, res) => {
 
     let query = `
         SELECT 
-            t.id, t.target_id, tg.nama_target, t.jenis_transaksi, t.jumlah, 
-            t.deskripsi, t.tanggal_transaksi, t.payment_gateway_ref 
+            t.id, 
+            t.target_id, 
+            tg.nama_target, 
+            t.jenis_transaksi, 
+            t.jumlah, 
+            t.deskripsi, 
+            t.tanggal_transaksi, 
+            t.payment_gateway_ref 
         FROM transactions t 
         JOIN targets tg ON t.target_id = tg.id 
-        WHERE t.user_id = ?`;
+        WHERE t.user_id = ?
+    `;
     const queryParams = [user_id];
     
     let countQuery = 'SELECT COUNT(*) AS total_records FROM transactions t WHERE t.user_id = ?';
     const countQueryParams = [user_id];
 
-    if (target_id) { query += ' AND t.target_id = ?'; queryParams.push(target_id); countQuery += ' AND t.target_id = ?'; countQueryParams.push(target_id); }
-    if (jenis_transaksi) { query += ' AND t.jenis_transaksi = ?'; queryParams.push(jenis_transaksi); countQuery += ' AND t.jenis_transaksi = ?'; countQueryParams.push(jenis_transaksi); }
-    if (start_date) { query += ' AND DATE(t.tanggal_transaksi) >= ?'; queryParams.push(start_date); countQuery += ' AND DATE(t.tanggal_transaksi) >= ?'; countQueryParams.push(start_date); }
-    if (end_date) { query += ' AND DATE(t.tanggal_transaksi) <= ?'; queryParams.push(end_date); countQuery += ' AND DATE(t.tanggal_transaksi) <= ?'; countQueryParams.push(end_date); }
+    // Tambahkan filter jika ada
+    if (target_id) {
+        query += ' AND t.target_id = ?';
+        queryParams.push(target_id);
+        countQuery += ' AND t.target_id = ?';
+        countQueryParams.push(target_id);
+    }
+    if (jenis_transaksi) {
+        query += ' AND t.jenis_transaksi = ?';
+        queryParams.push(jenis_transaksi);
+        countQuery += ' AND t.jenis_transaksi = ?';
+        countQueryParams.push(jenis_transaksi);
+    }
+    if (start_date) {
+        query += ' AND DATE(t.tanggal_transaksi) >= ?';
+        queryParams.push(start_date);
+        countQuery += ' AND DATE(t.tanggal_transaksi) >= ?';
+        countQueryParams.push(start_date);
+    }
+    if (end_date) {
+        query += ' AND DATE(t.tanggal_transaksi) <= ?';
+        queryParams.push(end_date);
+        countQuery += ' AND DATE(t.tanggal_transaksi) <= ?';
+        countQueryParams.push(end_date);
+    }
 
     query += ' ORDER BY t.tanggal_transaksi DESC LIMIT ? OFFSET ?';
     queryParams.push(limit, offset);
@@ -38,17 +67,34 @@ const getUserTransactions = async (req, res) => {
     try {
         const [transactions] = await pool.query(query, queryParams);
         const [totalResult] = await pool.query(countQuery, countQueryParams);
-        const total_records = totalResult[0].total_records;
+        
+        let total_records = 0; // Default ke 0
+        // Pengecekan defensif untuk totalResult
+        if (totalResult && totalResult.length > 0 && totalResult[0] && totalResult[0].total_records !== undefined) {
+            total_records = parseInt(totalResult[0].total_records, 10); // Pastikan itu angka
+        } else {
+            // Ini seharusnya tidak sering terjadi untuk query COUNT(*), tapi sebagai jaga-jaga
+            console.warn("Query COUNT untuk transaksi tidak mengembalikan hasil yang diharapkan atau total_records undefined:", totalResult);
+        }
+        
         const total_pages = Math.ceil(total_records / limit);
 
         res.json({
             message: 'Riwayat transaksi berhasil diambil.',
             data: transactions,
-            pagination: { page, limit, total_records, total_pages, has_next_page: page < total_pages, has_prev_page: page > 1 }
+            pagination: {
+                page: page,
+                limit: limit,
+                total_records: total_records,
+                total_pages: total_pages,
+                has_next_page: page < total_pages,
+                has_prev_page: page > 1
+            }
         });
     } catch (error) {
-        console.error('Error saat mengambil riwayat transaksi:', error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server saat mengambil riwayat transaksi.' });
+        console.error('Error saat mengambil riwayat transaksi:', error); // LOG ERROR DETAIL DI SINI
+        // Sesuaikan pesan error di bawah ini jika Anda ingin pesan yang lebih spesifik muncul di frontend
+        res.status(500).json({ message: 'Gagal mengambil data transaksi dari server.' }); 
     }
 };
 
@@ -106,10 +152,7 @@ const initiateQrisPayment = async (req, res) => {
         const panzngenResponse = await axios.get(panzngenCreateUrl, { params });
         console.log("Respons dari PanzNGen Create Payment:", JSON.stringify(panzngenResponse.data, null, 2));
 
-        // Struktur respons PanzNGen yang diharapkan (berdasarkan log pengguna):
-        // {"status":true,"creator":"PanzNgen","result":{"transactionId":"...", "qrImageUrl":"..."}}
         if (panzngenResponse.data && panzngenResponse.data.status === true && panzngenResponse.data.result && panzngenResponse.data.result.transactionId) {
-            
             const panzngenTransactionId = panzngenResponse.data.result.transactionId;
             const qrDataForDisplay = panzngenResponse.data.result.qrImageUrl;
 
@@ -191,9 +234,7 @@ const checkQrisPaymentStatus = async (req, res) => {
         const statusResponse = await axios.get(decodeStatusUrl, { params });
         console.log("Respons dari Decode Rerezz Cek Status:", JSON.stringify(statusResponse.data, null, 2));
 
-        // Asumsi struktur respons Decode Rerezz, sesuaikan jika perlu:
-        // {"status":200,"message":"success","data":{"status_transaksi":"SUCCESS", ...}}
-        let paymentStatus = 'PENDING'; // Default
+        let paymentStatus = 'PENDING';
         if (statusResponse.data && (statusResponse.data.status === 200 || statusResponse.data.success === true || typeof statusResponse.data.status === 'boolean' && statusResponse.data.status) && statusResponse.data.data && statusResponse.data.data.status_transaksi) {
             paymentStatus = statusResponse.data.data.status_transaksi.toUpperCase();
         } else if (statusResponse.data && statusResponse.data.message) {
@@ -227,7 +268,7 @@ const checkQrisPaymentStatus = async (req, res) => {
 
 module.exports = {
     makeManualDeposit,
-    getUserTransactions,
+    getUserTransactions,    // Termasuk fungsi yang diperbarui
     initiateQrisPayment,
     checkQrisPaymentStatus,
 };
