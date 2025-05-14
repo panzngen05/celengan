@@ -2,25 +2,23 @@
 const express = require('express');
 const router = express.Router();
 const {
-    makeManualDeposit, // Ubah nama rute ini jika perlu
+    makeManualDeposit,
     getUserTransactions,
-    initiateQrisPayment,
-    checkQrisPaymentStatus
+    confirmQrisPaymentByUser, // Fungsi controller baru
+    getAppConfig             // Fungsi controller baru
 } = require('../controllers/transactionController');
-const { protect } = require('../middleware/authMiddleware'); // Menggunakan middleware JWT 'protect'
+const { protect } = require('../middleware/authMiddleware');
 
-// Semua rute di bawah ini akan diproteksi
-router.use(protect); // Terapkan middleware ke semua rute di file ini
+// Rute untuk konfigurasi (bisa diproteksi atau tidak, tergantung kebutuhan)
+router.get('/config', getAppConfig); // Misal: /api/transactions/config
 
-// Rute lama untuk deposit manual (jika masih dipakai, pertimbangkan path yang lebih spesifik)
+// Semua rute di bawah ini memerlukan autentikasi
+router.use(protect);
+
 router.post('/deposit-manual', makeManualDeposit);
-
-// Rute untuk mendapatkan riwayat transaksi pengguna
 router.get('/', getUserTransactions);
 
-// --- Rute Baru untuk QRIS ---
-router.post('/qris/initiate', initiateQrisPayment);
-router.get('/qris/status/:ourTransactionRef', checkQrisPaymentStatus);
-
+// Rute baru untuk konfirmasi pembayaran QRIS oleh pengguna
+router.post('/qris/confirm-payment', confirmQrisPaymentByUser);
 
 module.exports = router;
