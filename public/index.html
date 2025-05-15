@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Celengan Digital Saya (Responsif)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celengan Digital Saya (Super Lengkap Final v2)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -14,62 +15,63 @@
         html { scroll-behavior: smooth; }
         body {
             font-family: 'Nunito Sans', sans-serif;
-            background-color: #1a1a1a; 
-            color: #e0e0e0;      
+            background-color: #1a1a1a; /* Latar belakang gelap utama */
+            color: #e0e0e0;       /* Teks terang utama */
             line-height: 1.6;
-            padding-top: 70px; /* Sesuaikan dengan tinggi nav setelah fix */
+            padding-top: 80px; /* Ruang untuk nav fixed jika ada */
             padding-bottom: 20px;
         }
 
-        .page-container { 
+        .page-container { /* Wrapper untuk konten halaman agar bisa di-center jika pendek */
             display: flex;
             flex-direction: column; 
-            align-items: center; 
+            align-items: center; /* Pusatkan konten utama */
             width: 100%;
-            padding: 10px; /* Padding untuk .page-container di mobile */
+            min-height: calc(100vh - 100px); /* Tinggi viewport dikurangi padding atas & bawah body */
         }
 
         .auth-container, .dashboard-container, .history-container, .modal-content {
-            background-color: #2c2c2c; 
-            padding: 20px; /* Padding default, akan disesuaikan media query */
+            background-color: #2c2c2c; /* Latar belakang kontainer lebih terang dari body */
+            padding: 30px 40px;
             border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); 
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); /* Bayangan lebih gelap */
             width: 100%;
-            border: 1px solid #444; 
+            border: 1px solid #444; /* Border subtil */
         }
-        .auth-container { max-width: 450px; margin: 20px auto; }
+        .auth-container { max-width: 450px; margin: 20px auto; } /* Beri margin atas dan bawah */
         .dashboard-container, .history-container { max-width: 900px; margin: 20px auto; }
 
+
         h1, h2, h3 { color: #ffffff; margin-bottom: 20px; } 
-        h1 { font-size: 26px; /* Sedikit lebih kecil untuk mobile-first */ font-weight: 800; text-align: center; }
-        h2 { font-size: 22px; /* Sedikit lebih kecil */ font-weight: 700; }
+        h1 { font-size: 28px; font-weight: 800; text-align: center; }
+        h2 { font-size: 24px; font-weight: 700; }
         .target-card h3 { font-size: 18px; font-weight: 700; text-align: left; color: #f5f5f5; }
 
         /* Form Styling Tema Gelap */
-        .form-group { margin-bottom: 15px; } /* Kurangi margin bottom */
-        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #b0b0b0; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #b0b0b0; }
         .form-group input[type="text"],
         .form-group input[type="email"],
         .form-group input[type="password"],
         .form-group input[type="number"],
         .form-group input[type="date"],
         .form-group textarea {
-            width: 100%; padding: 10px 12px; /* Padding lebih kecil */
+            width: 100%; padding: 12px 15px;
             background-color: #3a3a3a; color: #e0e0e0;
-            border: 1px solid #555; border-radius: 6px; /* Radius lebih kecil */ font-size: 15px; /* Font size input */
+            border: 1px solid #555; border-radius: 8px; font-size: 16px;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
             font-family: 'Nunito Sans', sans-serif; 
         }
         .form-group input::placeholder, .form-group textarea::placeholder { color: #888; }
         .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #00acc1; box-shadow: 0 0 0 2px rgba(0, 172, 193, 0.3); }
-        .form-text { text-align: center; margin-top: 15px; font-size: 13px; color: #a0a0a0; }
+        .form-text { text-align: center; margin-top: 20px; font-size: 14px; color: #a0a0a0; }
         .form-text a { color: #00bcd4; text-decoration: none; font-weight: 600; }
         .form-text a:hover { text-decoration: underline; }
 
         /* Tombol Tema Gelap */
-        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; /* Padding disesuaikan */ font-size: 15px; /* Font size disesuaikan */ font-weight: 700; line-height: 1.5; text-align: center; text-decoration: none; border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; font-size: 16px; font-weight: 700; line-height: 1.5; text-align: center; text-decoration: none; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; }
         .btn-full-width { width: 100%; }
-        .btn-sm { padding: 6px 12px; font-size: 13px; width: auto; }
+        .btn-sm { padding: 8px 16px; font-size: 14px; width: auto; }
         .btn i { margin-right: 8px; }
         .btn-primary { background-color: #00bcd4; color: #111; box-shadow: 0px 4px 12px rgba(0, 188, 212, 0.3); }
         .btn-primary:hover { background-color: #00acc1; transform: translateY(-1px); }
@@ -83,10 +85,10 @@
         .btn-secondary:disabled, .btn-secondary[disabled] { background-color: transparent !important; color: #757575 !important; border-color: #757575 !important; }
 
         /* Dashboard & History */
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; /* Tambah gap untuk wrapping */ }
-        .page-header h2 { text-align: left; margin-bottom: 0; color: #f5f5f5; flex-grow: 1; } /* Judul bisa membesar */
-        #dashboardUserGreeting { font-size: 15px; font-weight: normal; color: #b0b0b0; width: 100%; margin-bottom: 15px; }
-        .target-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* Sedikit perkecil min card width */ gap: 15px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .page-header h2 { text-align: left; margin-bottom: 0; color: #f5f5f5; flex-grow: 1; }
+        #dashboardUserGreeting { font-size: 16px; font-weight: normal; color: #b0b0b0; width: 100%; margin-bottom: 15px; }
+        .target-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; }
         .target-card { background-color: #3a3a3a; padding: 15px; border-radius: 10px; border: 1px solid #555; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
         .target-info { font-size: 13px; color: #b0b0b0; margin-bottom: 6px; } .target-info strong { color: #e0e0e0; }
         .progress-bar-container { width: 100%; background-color: #555; border-radius: 25px; height: 10px; margin-top: 8px; margin-bottom: 4px; overflow: hidden; }
@@ -97,26 +99,26 @@
         /* Riwayat Transaksi */
         .transaction-table-container { overflow-x: auto; width: 100%; }
         .transaction-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .transaction-table th, .transaction-table td { padding: 8px 10px; /* Padding lebih kecil */ border: 1px solid #444; text-align: left; font-size: 13px; /* Font lebih kecil */ white-space: nowrap; }
+        .transaction-table th, .transaction-table td { padding: 8px 10px; border: 1px solid #444; text-align: left; font-size: 13px; white-space: nowrap; }
         .transaction-table th { background-color: #3a3a3a; color: #00bcd4; font-weight: 700; }
         .transaction-table tr:nth-child(even) { background-color: #333333; }
         .transaction-table .amount-deposit { color: #81c784; font-weight: bold; }
         .transaction-table .amount-withdrawal { color: #e57373; font-weight: bold; }
         .transaction-table td:nth-child(5) { white-space: normal; min-width: 150px; } 
-        .pagination-controls { margin-top: 20px; text-align: center; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; /* Pagination bisa wrap */}
+        .pagination-controls { margin-top: 20px; text-align: center; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
         #loadingHistoryText, #noHistoryText { text-align: center; margin-top: 20px; color: #aaa;}
 
         /* Modal & Animasi */
-        .modal { display: flex; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; padding: 10px; /* Padding modal dikurangi di mobile */ opacity: 0; visibility: hidden; transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; }
+        .modal { display: flex; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; padding: 10px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; }
         .modal.open { opacity: 1; visibility: visible; transition-delay: 0s; }
-        .modal-content { position: relative; transform: translateY(-30px) scale(0.95); opacity: 0; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); max-width: 95%; /* Batasi lebar modal di mobile */}
+        .modal-content { position: relative; transform: translateY(-30px) scale(0.95); opacity: 0; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); max-width: 95%; }
         .modal.open .modal-content { transform: translateY(0) scale(1); opacity: 1; }
-        .modal-content h2 { text-align: center; color: #f5f5f5; font-size: 20px; /* H2 di modal lebih kecil */}
-        .close-button { color: #777; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; } /* Posisi close button disesuaikan */
+        .modal-content h2 { text-align: center; color: #f5f5f5; font-size: 20px; }
+        .close-button { color: #777; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; }
         .close-button:hover, .close-button:focus { color: #ccc; text-decoration: none; cursor: pointer; }
 
         /* QRIS Modal */
-        #staticQrisImage { max-width: 200px; max-height: 200px; /* QRIS lebih kecil di mobile */ margin: 15px auto; display: block; border: 1px solid #555; padding: 5px; background-color: white; }
+        #staticQrisImage { max-width: 200px; max-height: 200px; margin: 15px auto; display: block; border: 1px solid #555; padding: 5px; background-color: white; }
         #qrisPaymentModal p { color: #b0b0b0; } #qrisPaymentModal strong { color: #e0e0e0; }
 
         /* Custom Alert Modal Styling */
@@ -130,25 +132,26 @@
         #customAlertOkButton { width: auto; padding: 8px 25px; display: block; margin: 0 auto; font-size: 14px; }
 
         /* Navigasi */
-        .simple-nav { position: fixed; top: 0; left: 0; width: 100%; background: #2c2c2c; padding: 8px 15px; /* Padding nav disesuaikan */ border-bottom: 1px solid #444; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 1001; display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; /* Nav bisa wrap */ }
-        .simple-nav button { background: #4a4a4a; color: #e0e0e0; border: 1px solid #555; padding: 6px 12px; /* Padding tombol nav */ border-radius: 6px; cursor: pointer; font-size: 13px; /* Font tombol nav */ font-weight: 600; transition: background-color 0.2s ease; }
+        .simple-nav { position: fixed; top: 0; left: 0; width: 100%; background: #2c2c2c; padding: 8px 15px; border-bottom: 1px solid #444; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 1001; display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .simple-nav button { background: #4a4a4a; color: #e0e0e0; border: 1px solid #555; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background-color 0.2s ease; }
         .simple-nav button:hover { background: #5a5a5a; }
-        .simple-nav .nav-app-title { margin-right: auto; font-size: 16px; /* Judul app lebih kecil */ font-weight: 700; color: #00bcd4; }
+        .simple-nav .nav-app-title { margin-right: auto; font-size: 16px; font-weight: 700; color: #00bcd4; }
 
         .page-section { display: none; }
         .page-section.active { display: block; animation: fadeInPage 0.4s ease-in-out; }
         @keyframes fadeInPage { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Media Queries untuk Desktop (Layar Lebih Besar) */
+        /* Media Queries untuk Desktop (Layar Lebih Besar) dari respons #81 */
         @media (min-width: 768px) {
+            body { padding-top: 80px; }
             .page-container { padding: 20px; }
             .auth-container, .dashboard-container, .history-container, .modal-content {
-                 padding: 30px 40px; /* Kembalikan padding normal */
+                 padding: 30px 40px; 
             }
             .auth-container { max-width: 450px; }
             .dashboard-container, .history-container { max-width: 900px; }
             #customAlertModal .modal-content { max-width: 400px; }
-            .modal-content { max-width: 500px; } /* Modal content bisa lebih lebar di desktop */
+            .modal-content { max-width: 500px; } 
 
 
             h1 { font-size: 28px; }
@@ -157,7 +160,7 @@
             #customAlertModal h3 { font-size: 20px; }
             #customAlertMessage { font-size: 16px; }
 
-            .form-group label { font-size: initial; } /* Kembalikan ke default jika perlu */
+            .form-group label { font-size: initial; } 
             .form-group input[type="text"],
             .form-group input[type="email"],
             .form-group input[type="password"],
@@ -178,10 +181,9 @@
             .simple-nav button { padding: 8px 15px; font-size: 14px; }
             .simple-nav .nav-app-title { font-size: 18px; }
 
-            #staticQrisImage { max-width: 250px; max-height: 250px; } /* Ukuran QRIS normal di desktop */
+            #staticQrisImage { max-width: 250px; max-height: 250px; } 
             .transaction-table th, .transaction-table td { padding: 10px 12px; font-size: 14px; }
         }
-
     </style>
 </head>
 <body>
@@ -353,15 +355,15 @@
 
             if (type === 'success') {
                 alertTitleSpan.textContent = 'Sukses!';
-                alertIconEl.className = 'fas fa-check-circle';
+                if(alertIconEl) alertIconEl.className = 'fas fa-check-circle';
                 modalContent.classList.add('alert-modal-success');
             } else if (type === 'error') {
                 alertTitleSpan.textContent = 'Error!';
-                alertIconEl.className = 'fas fa-exclamation-triangle';
+                if(alertIconEl) alertIconEl.className = 'fas fa-exclamation-triangle';
                 modalContent.classList.add('alert-modal-error');
             } else { 
                 alertTitleSpan.textContent = 'Informasi';
-                alertIconEl.className = 'fas fa-info-circle';
+                if(alertIconEl) alertIconEl.className = 'fas fa-info-circle';
                 modalContent.classList.add('alert-modal-info');
             }
             alertMessageEl.textContent = message;
@@ -383,13 +385,13 @@
 
         // --- Config Fetcher ---
         async function fetchAppConfig() {
-            const configData = await apiCall('/transactions/config', 'GET', null, false); // Endpoint config, tidak perlu auth
+            const configData = await apiCall('/transactions/config', 'GET', null, false);
             if (configData && configData.staticQrisImageUrl) {
                 STATIC_QRIS_IMAGE_URL = configData.staticQrisImageUrl;
                 console.log("Static QRIS Image URL loaded:", STATIC_QRIS_IMAGE_URL);
             } else {
                 console.error("Gagal mengambil URL QRIS statis dari server atau URL tidak valid. Pesan dari server:", configData ? configData.warning || "Tidak ada URL." : "Tidak ada respons config.");
-                // Tidak menampilkan showMessage di sini karena bisa mengganggu saat startup jika ada masalah jaringan awal
+                // Pesan error akan ditangani oleh showMessage di apiCall atau di tempat pemanggilan jika configData null
             }
         }
 
@@ -457,8 +459,8 @@
                     currentUser = userProfile;
                     localStorage.setItem('celenganCurrentUser', JSON.stringify(currentUser));
                     if(greetingEl) greetingEl.textContent = `Halo, ${currentUser.nama}!`;
-                    showPage('dashboardPage');
-                } else { handleLogout(false); }
+                    showPage('dashboardPage'); 
+                } else { handleLogout(false); } // Token tidak valid, logout
             } else { showPage('loginPinPage'); }
         }
 
@@ -550,29 +552,23 @@
                 const originalOkHTML = okButton.innerHTML;
                 const originalOkClasses = okButton.className;
                 okButton.innerHTML = '<i class="fas fa-trash"></i> Ya, Hapus';
-                okButton.className = 'btn btn-danger'; // Ganti kelas
+                okButton.className = 'btn btn-danger';
                 let tempButtonContainer = okButton.parentNode.querySelector('.temp-button-container');
-                if (!tempButtonContainer) {
+                if (tempButtonContainer) { tempButtonContainer.innerHTML = ''; } // Bersihkan jika sudah ada
+                else {
                     tempButtonContainer = document.createElement('div');
-                    tempButtonContainer.className = 'temp-button-container'; // Beri kelas agar bisa dicari lagi
+                    tempButtonContainer.className = 'temp-button-container'; 
                     tempButtonContainer.style.display = 'flex';
                     tempButtonContainer.style.justifyContent = 'center';
                     tempButtonContainer.style.gap = '10px';
                     tempButtonContainer.style.marginTop = '20px';
                     okButton.parentNode.appendChild(tempButtonContainer);
-                } else {
-                    tempButtonContainer.innerHTML = ''; // Bersihkan container jika sudah ada
                 }
-                
-                // Pastikan tombol OK dipindahkan ke dalam container, bukan diduplikasi
-                if (okButton.parentNode !== tempButtonContainer) {
-                    tempButtonContainer.appendChild(okButton);
-                }
-
+                tempButtonContainer.appendChild(okButton); // Pindahkan OK ke container
                 const cancelButton = document.createElement('button');
                 cancelButton.innerHTML = '<i class="fas fa-times"></i> Batal';
                 cancelButton.className = 'btn btn-secondary';
-                tempButtonContainer.appendChild(cancelButton);
+                tempButtonContainer.appendChild(cancelButton); // Tambah Batal ke container
 
                 const onOk = () => { cleanup(); resolve(true); };
                 const onCancel = () => { cleanup(); resolve(false); };
@@ -636,15 +632,18 @@
             showMessage('Memproses konfirmasi pembayaran Anda...', 'info', 0); 
             const payload = { target_id: parseInt(targetId), amount: parseFloat(amount) };
             const result = await apiCall('/transactions/qris/confirm-payment', 'POST', payload);
-            // closeModal('customAlertModal'); // Alert "memproses" akan ditutup oleh alert berikutnya atau jika gagal
             if (result && result.transactionDetails && result.transactionDetails.transaction_id) {
-                closeModal('customAlertModal'); // Tutup alert "memproses" jika sukses sebelum alert sukses
+                closeModal('customAlertModal');
                 showMessage('Konfirmasi pembayaran berhasil! Saldo target telah diperbarui.', 'success');
                 closeModal('qrisPaymentModal');
                 loadTargets();
             } else {
-                 // Jika gagal, showMessage error dari apiCall akan tampil, tidak perlu tutup manual alert "memproses"
-                 // karena showMessage error akan menggantikannya.
+                 // Jika gagal, showMessage error dari apiCall akan tampil.
+                 // Kita mungkin tetap ingin menutup alert "memproses" jika error muncul dari apiCall
+                 if (document.getElementById('customAlertModal').classList.contains('open') && 
+                     document.getElementById('customAlertMessage').textContent.includes('Memproses konfirmasi')) {
+                    closeModal('customAlertModal'); 
+                 }
             }
         }
         
@@ -677,12 +676,16 @@
             showMessage('Memproses permintaan penarikan Anda...', 'info', 0);
             const payload = { target_id: parseInt(targetId), amount: parseFloat(amount), reason: reason };
             const result = await apiCall('/transactions/withdraw', 'POST', payload);
-            // closeModal('customAlertModal'); // Tutup alert "memproses" manual
             if (result && result.transactionDetails && result.transactionDetails.transaction_id) {
                 closeModal('customAlertModal');
                 showMessage('Penarikan berhasil! Saldo target telah diperbarui.', 'success');
                 closeModal('withdrawalModal');
                 loadTargets();
+            } else {
+                if (document.getElementById('customAlertModal').classList.contains('open') && 
+                    document.getElementById('customAlertMessage').textContent.includes('Memproses permintaan penarikan')) {
+                    closeModal('customAlertModal');
+                }
             }
         }
 
@@ -702,10 +705,11 @@
             const modal = document.getElementById(modalId);
             if (modal) {
                 modal.classList.remove('open');
-                if (modalId !== 'customAlertModal') {
+                if (modalId !== 'customAlertModal') { // Jangan reset form custom alert
                     const form = modal.querySelector('form');
                     if (form) { form.reset(); }
                 }
+                // Reset judul modal target ke default saat ditutup, jika itu modal target
                 if (modalId === 'createTargetModal') {
                     const targetIdInput = document.getElementById('targetId'); if (targetIdInput) targetIdInput.value = '';
                     const modalTitle = document.getElementById('modalTitle'); if(modalTitle) modalTitle.textContent = 'Buat Target Tabungan Baru';
@@ -725,10 +729,10 @@
             const navToRegister = document.getElementById('navToRegisterButton');
             const navToLogin = document.getElementById('navToLoginButton');
 
-            if(navDashboard) navDashboard.style.backgroundColor = '#4a4a4a';
-            if(navHistory) navHistory.style.backgroundColor = '#4a4a4a';
+            if(navDashboard) navDashboard.style.backgroundColor = '#4a4a4a'; // Reset aksen
+            if(navHistory) navHistory.style.backgroundColor = '#4a4a4a';   // Reset aksen
 
-            if (currentAuthToken && currentUser) {
+            if (currentAuthToken && currentUser) { // Logged in
                 if(navDashboard) navDashboard.style.display = 'inline-block';
                 if(navHistory) navHistory.style.display = 'inline-block';
                 if(navLogout) navLogout.style.display = 'inline-block';
@@ -736,16 +740,29 @@
                 if(navToLogin) navToLogin.style.display = 'none';
                 
                 const activeModal = document.querySelector('.modal.open');
-                if (!activeModal) {
-                    if (pageId === 'dashboardPage') { if(navDashboard) navDashboard.style.backgroundColor = '#00bcd4'; loadTargets(); }
-                    else if (pageId === 'historyPage') { if(navHistory) navHistory.style.backgroundColor = '#00bcd4'; loadTransactionHistory(1); }
-                    else if (pageId !== 'loginPinPage' && pageId !== 'registerPinPage' && document.getElementById('dashboardPage')) {
-                        if (pageId !== 'dashboardPage') showPage('dashboardPage'); // Default ke dashboard
+                if (!activeModal) { // Hanya proses navigasi jika tidak ada modal yang terbuka
+                    if (pageId === 'dashboardPage') { 
+                        if(navDashboard) navDashboard.style.backgroundColor = '#00bcd4'; // Aksen aktif
+                        loadTargets(); 
+                    } else if (pageId === 'historyPage') { 
+                        if(navHistory) navHistory.style.backgroundColor = '#00bcd4'; // Aksen aktif
+                        loadTransactionHistory(1); 
+                    } else if (pageId !== 'loginPinPage' && pageId !== 'registerPinPage' && document.getElementById('dashboardPage')) {
+                        // Jika halaman tidak dikenal dan sudah login, arahkan ke dashboard
+                        if (pageId !== 'dashboardPage') { // Hindari loop tak terbatas
+                             showPage('dashboardPage');
+                        } else { // Jika sudah di dashboard tapi tombol belum teraksen
+                             if(navDashboard) navDashboard.style.backgroundColor = '#00bcd4';
+                             loadTargets();
+                        }
                     }
-                } else if (pageId === 'historyPage' && !activeModal){ loadTransactionHistory(1); }
+                } else if (pageId === 'historyPage' && !activeModal){ // Jika navigasi ke history saat tidak ada modal
+                     loadTransactionHistory(1);
+                     if(navHistory) navHistory.style.backgroundColor = '#00bcd4';
+                }
 
 
-            } else {
+            } else { // Logged out
                 if(navDashboard) navDashboard.style.display = 'none'; if(navHistory) navHistory.style.display = 'none'; if(navLogout) navLogout.style.display = 'none';
                 const activeModal = document.querySelector('.modal.open'); if (activeModal) closeModal(activeModal.id);
                 if (pageId === 'loginPinPage') { if(navToRegister) navToRegister.style.display = 'inline-block'; if(navToLogin) navToLogin.style.display = 'none'; }
@@ -756,6 +773,7 @@
 
         // --- Event Listeners Setup ---
         function setupEventListeners() {
+            // Forms
             const loginForm = document.getElementById('loginPinForm'); if(loginForm) loginForm.addEventListener('submit', handlePinLogin);
             const registerForm = document.getElementById('registerPinForm'); if(registerForm) registerForm.addEventListener('submit', handlePinRegister);
             const targetForm = document.getElementById('targetForm'); if(targetForm) targetForm.addEventListener('submit', handleTargetForm);
@@ -763,8 +781,13 @@
             const btnConfirmQrisPaid = document.getElementById('btnConfirmQrisPaid'); if(btnConfirmQrisPaid) btnConfirmQrisPaid.addEventListener('click', handleQrisUserConfirmation);
             const withdrawalForm = document.getElementById('withdrawalForm'); if (withdrawalForm) withdrawalForm.addEventListener('submit', handleWithdrawalForm);
             const customAlertOkButton = document.getElementById('customAlertOkButton'); if(customAlertOkButton) customAlertOkButton.addEventListener('click', () => closeModal('customAlertModal'));
+            
+            // Modal Close Buttons
             document.querySelectorAll('.modal .close-button').forEach(button => button.addEventListener('click', () => closeModal(button.closest('.modal').id)));
+            // Close modal on outside click
             window.addEventListener('click', (event) => { document.querySelectorAll('.modal').forEach(modal => { if (event.target == modal) closeModal(modal.id); }); });
+            
+            // Navigation Links/Buttons
             const navLogoutButton = document.getElementById('navLogoutButton'); if(navLogoutButton) navLogoutButton.addEventListener('click', () => handleLogout());
             const linkToRegister = document.getElementById('linkToRegisterPage'); if(linkToRegister) linkToRegister.addEventListener('click', (e) => { e.preventDefault(); showPage('registerPinPage'); });
             const linkToLogin = document.getElementById('linkToLoginPage'); if(linkToLogin) linkToLogin.addEventListener('click', (e) => { e.preventDefault(); showPage('loginPinPage'); });
@@ -772,14 +795,22 @@
             const navToLoginButton = document.getElementById('navToLoginButton'); if(navToLoginButton) navToLoginButton.addEventListener('click', () => showPage('loginPinPage'));
             const navDashboardButton = document.getElementById('navDashboardButton'); if(navDashboardButton) navDashboardButton.addEventListener('click', () => showPage('dashboardPage'));
             const navHistoryButton = document.getElementById('navHistoryButton'); if(navHistoryButton) navHistoryButton.addEventListener('click', () => showPage('historyPage'));
+
+            // Pagination Buttons for History
             const prevPageBtn = document.getElementById('prevPageButton'); if(prevPageBtn) prevPageBtn.addEventListener('click', () => { if (currentTransactionPage > 1) loadTransactionHistory(currentTransactionPage - 1); });
-            const nextPageBtn = document.getElementById('nextPageButton'); if(nextPageBtn) nextPageBtn.addEventListener('click', () => { loadTransactionHistory(currentTransactionPage + 1); });
+            const nextPageBtn = document.getElementById('nextPageButton'); if(nextPageBtn) nextPageBtn.addEventListener('click', () => { 
+                // Perlu validasi apakah ada halaman berikutnya dari info pagination sebelum memanggil
+                // Untuk sekarang, biarkan loadTransactionHistory yang handle jika page melebihi total_pages
+                loadTransactionHistory(currentTransactionPage + 1); 
+            });
+
+            // Open Create Target Modal Button
             const btnOpenCreateTargetModal = document.getElementById('btnOpenCreateTargetModal');
             if(btnOpenCreateTargetModal) {
                 btnOpenCreateTargetModal.addEventListener('click', () => {
                     if (!currentAuthToken || !currentUser) { showMessage("Anda harus login untuk membuat target.", "error"); showPage('loginPinPage'); return; }
                     document.getElementById('targetForm').reset();
-                    document.getElementById('targetId').value = '';
+                    document.getElementById('targetId').value = ''; // Pastikan ID kosong untuk mode create
                     document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
                     openModal('createTargetModal');
                 });
@@ -789,9 +820,10 @@
         // Panggil saat DOM sudah siap
         document.addEventListener('DOMContentLoaded', () => {
             setupEventListeners();
-            checkAuthStatus(); 
+            checkAuthStatus(); // Ini akan memanggil fetchAppConfig dan menentukan halaman awal
         });
 
     </script>
 </body>
 </html>
+
