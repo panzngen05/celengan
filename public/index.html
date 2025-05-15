@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celengan Digital Saya (Super Lengkap Final)</title>
+    <title>Celengan Digital Saya (Final Lengkap)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -101,8 +101,6 @@
             flex-wrap: wrap; 
             gap: 10px; 
         }
-        /* .target-actions .btn { margin-bottom: 8px; } /* Dihapus karena gap sudah menangani */
-
 
         /* Riwayat Transaksi */
         .transaction-table-container { overflow-x: auto; }
@@ -266,7 +264,7 @@
             if (body) { config.body = JSON.stringify(body); }
             try {
                 const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-                let responseTextForError = ''; // Untuk fallback jika parse JSON gagal
+                let responseTextForError = ''; 
                 if ((response.status === 401 || response.status === 403) && requiresAuth) {
                     let errorData = { message: `Akses ditolak (${response.status}). Sesi mungkin berakhir atau tidak valid.` };
                     try { errorData = await response.json(); } catch (e) { /* biarkan errorData default */ }
@@ -276,12 +274,11 @@
                 }
                 let data;
                 try {
-                    // Clone respons untuk bisa baca teks jika json() gagal
                     const clonedResponse = response.clone();
                     data = await response.json();
                 } catch (e) {
                     console.error('Error parsing JSON response:', e);
-                    responseTextForError = await (response.text ? response.text() : clonedResponse.text()); // Coba ambil teks dari clone jika response.text() sudah dipakai
+                    responseTextForError = await (response.text ? response.text() : (typeof clonedResponse !== 'undefined' ? clonedResponse.text() : Promise.resolve("Tidak bisa membaca response text"))); 
                     console.error('Response text:', responseTextForError);
                     showMessage(`Server memberikan respons yang tidak valid (bukan JSON). Status: ${response.status}. Cek console untuk detail.`, 'error');
                     return null;
@@ -299,7 +296,7 @@
             }
         }
         
-        function showMessage(message, type = 'info', autoCloseDelay = 0) { // autoCloseDelay dalam ms, 0 = tidak auto close
+        function showMessage(message, type = 'info', autoCloseDelay = 0) {
             const alertModal = document.getElementById('customAlertModal');
             const alertTitleSpan = alertModal.querySelector('#customAlertTitle span');
             const alertIconEl = document.getElementById('customAlertIcon');
@@ -317,7 +314,7 @@
                 alertTitleSpan.textContent = 'Error!';
                 if(alertIconEl) alertIconEl.className = 'fas fa-exclamation-triangle';
                 modalContent.classList.add('alert-modal-error');
-            } else { // info atau default
+            } else { 
                 alertTitleSpan.textContent = 'Informasi';
                 if(alertIconEl) alertIconEl.className = 'fas fa-info-circle';
                 modalContent.classList.add('alert-modal-info');
@@ -327,16 +324,15 @@
             openModal('customAlertModal');
 
             if (autoCloseDelay > 0) {
-                okButton.style.display = 'none'; // Sembunyikan tombol OK jika auto close
+                okButton.style.display = 'none';
                 setTimeout(() => {
-                    // Pastikan modal masih terbuka sebelum menutup (mungkin sudah ditutup manual)
                     if (document.getElementById('customAlertModal').classList.contains('open')) {
                         closeModal('customAlertModal');
                     }
-                    okButton.style.display = 'block'; // Kembalikan tombol OK
+                    okButton.style.display = 'block';
                 }, autoCloseDelay);
             } else {
-                 okButton.style.display = 'block'; // Tampilkan tombol OK jika tidak auto close
+                 okButton.style.display = 'block';
             }
         }
 
@@ -348,8 +344,6 @@
                 console.log("Static QRIS Image URL loaded:", STATIC_QRIS_IMAGE_URL);
             } else {
                 console.error("Gagal mengambil URL QRIS statis dari server atau URL tidak valid. Pesan dari server:", configData ? configData.warning || "Tidak ada URL." : "Tidak ada respons config.");
-                // showMessage("Konfigurasi pembayaran QRIS tidak lengkap. Fitur QRIS mungkin tidak berfungsi.", "warning"); 
-                // Tombol QRIS akan disembunyikan di renderTargetCard jika URL tidak valid
             }
         }
 
@@ -366,11 +360,10 @@
                 currentUser = { id: data.id, nama: data.nama, email: data.email };
                 localStorage.setItem('celenganAuthToken', currentAuthToken);
                 localStorage.setItem('celenganCurrentUser', JSON.stringify(currentUser));
-                showMessage(`Login berhasil! Selamat datang, ${data.nama}.`, 'success', 2000); // Auto close setelah 2 detik
+                showMessage(`Login berhasil! Selamat datang, ${data.nama}.`, 'success', 2000);
                 document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
                 showPage('dashboardPage');
-                loadTargets();
-            }
+            } else { /* Error sudah dihandle oleh apiCall */ }
             document.getElementById('loginPinForm').reset();
         }
         async function handlePinRegister(event) {
@@ -389,11 +382,10 @@
                 showMessage('Registrasi berhasil! Selamat datang.', 'success', 2000);
                 document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
                 showPage('dashboardPage');
-                loadTargets();
             } else if (data && data.id && !data.token) {
                 showMessage('Registrasi berhasil! Silakan login dengan PIN Anda.', 'success');
                 showPage('loginPinPage');
-            }
+            } else { /* Error sudah dihandle oleh apiCall */ }
             document.getElementById('registerPinForm').reset();
         }
         function handleLogout(showMsg = true) {
@@ -415,9 +407,8 @@
                 if (userProfile && userProfile.id) {
                     currentUser = userProfile;
                     localStorage.setItem('celenganCurrentUser', JSON.stringify(currentUser));
-                    document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
+                    if(document.getElementById('dashboardUserGreeting')) document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
                     showPage('dashboardPage');
-                    // loadTargets(); // Dipanggil oleh showPage jika pageId adalah dashboardPage
                 } else { handleLogout(false); }
             } else { showPage('loginPinPage'); }
         }
@@ -428,10 +419,8 @@
             const noTargetsText = document.getElementById('noTargetsText');
             if (!currentUser) { if(targetListContainer) targetListContainer.innerHTML = '<p style="color: #aaa;">Silakan login untuk melihat target.</p>'; if(noTargetsText) noTargetsText.style.display = 'none'; return; }
             if(targetListContainer) targetListContainer.innerHTML = '<p style="color: #aaa;">Memuat target...</p>';
-            
             const response = await apiCall('/targets', 'GET');
             console.log("[loadTargets] Response from API:", response);
-
             if (response && Array.isArray(response)) {
                 if(targetListContainer) targetListContainer.innerHTML = '';
                 if (response.length === 0) {
@@ -479,7 +468,7 @@
             if (result && (result.id || result.nama_target || (result.message && result.message.toLowerCase().includes('berhasil')) || (result.message && result.message.toLowerCase().includes('updated')))) {
                 showMessage(targetId ? 'Target berhasil diperbarui!' : 'Target baru berhasil dibuat!', 'success');
                 closeModal('createTargetModal'); loadTargets();
-            } else { /* showMessage sudah dihandle di apiCall jika result null */ }
+            }
         }
         async function openEditTargetModal(targetIdToEdit) {
             if (!currentUser) { showMessage("Anda harus login.", "error"); return; }
@@ -492,10 +481,9 @@
                 document.getElementById('jumlahTarget').value = target.jumlah_target;
                 document.getElementById('tanggalTarget').value = target.tanggal_target ? target.tanggal_target.split('T')[0] : '';
                 openModal('createTargetModal');
-            } else { /* showMessage sudah dihandle di apiCall jika target null */ }
+            }
         }
         async function handleDeleteTarget(targetId, targetName) {
-            // Menggunakan custom alert untuk konfirmasi
             const confirmDelete = await new Promise(resolve => {
                 const alertModal = document.getElementById('customAlertModal');
                 const alertTitleSpan = alertModal.querySelector('#customAlertTitle span');
@@ -503,53 +491,51 @@
                 const alertMessageEl = document.getElementById('customAlertMessage');
                 const modalContent = alertModal.querySelector('.modal-content');
                 const okButton = document.getElementById('customAlertOkButton');
-                
                 modalContent.classList.remove('alert-modal-success', 'alert-modal-error');
-                modalContent.classList.add('alert-modal-info'); // Atau 'alert-modal-warning' jika ada stylingnya
-
+                modalContent.classList.add('alert-modal-info');
                 alertTitleSpan.textContent = 'Konfirmasi Hapus';
                 if(alertIconEl) alertIconEl.className = 'fas fa-question-circle';
                 alertMessageEl.textContent = `Apakah Anda yakin ingin menghapus target "${targetName}"? Aksi ini tidak dapat dibatalkan.`;
-                
-                // Ubah tombol OK menjadi "Ya, Hapus" dan tambahkan tombol "Batal"
-                const originalOkText = okButton.innerHTML;
+                const originalOkHTML = okButton.innerHTML;
+                const originalOkClasses = okButton.className;
                 okButton.innerHTML = '<i class="fas fa-trash"></i> Ya, Hapus';
-                okButton.classList.remove('btn-primary');
-                okButton.classList.add('btn-danger');
+                okButton.className = 'btn btn-danger'; // Ganti kelas
+                const tempButtonContainer = document.createElement('div');
+                tempButtonContainer.style.display = 'flex';
+                tempButtonContainer.style.justifyContent = 'center';
+                tempButtonContainer.style.gap = '10px';
+                tempButtonContainer.style.marginTop = '20px';
 
                 const cancelButton = document.createElement('button');
                 cancelButton.innerHTML = '<i class="fas fa-times"></i> Batal';
                 cancelButton.className = 'btn btn-secondary';
-                cancelButton.style.marginLeft = '10px';
                 
-                const existingCancel = okButton.parentNode.querySelector('.btn-secondary');
-                if(existingCancel) existingCancel.remove(); // Hapus tombol batal lama jika ada
+                // Hapus tombol OK yang ada jika sudah punya parent, lalu tambahkan container baru
+                if (okButton.parentNode) {
+                    okButton.parentNode.insertBefore(tempButtonContainer, okButton.nextSibling); // Masukkan container
+                    tempButtonContainer.appendChild(okButton); // Pindahkan OK ke container
+                    tempButtonContainer.appendChild(cancelButton); // Tambah Batal ke container
+                }
 
-                okButton.parentNode.appendChild(cancelButton);
 
-                const onOk = () => {
-                    cleanup();
-                    resolve(true);
-                };
-                const onCancel = () => {
-                    cleanup();
-                    resolve(false);
-                };
+                const onOk = () => { cleanup(); resolve(true); };
+                const onCancel = () => { cleanup(); resolve(false); };
                 const cleanup = () => {
                     okButton.removeEventListener('click', onOk);
                     cancelButton.removeEventListener('click', onCancel);
-                    okButton.innerHTML = originalOkText; // Kembalikan teks tombol OK
-                    okButton.classList.remove('btn-danger');
-                    okButton.classList.add('btn-primary');
-                    cancelButton.remove();
+                    // Kembalikan tombol OK ke state semula dan tempat semula
+                    okButton.innerHTML = originalOkHTML;
+                    okButton.className = originalOkClasses;
+                    if(tempButtonContainer.parentNode && okButton.parentNode === tempButtonContainer) {
+                         tempButtonContainer.parentNode.insertBefore(okButton, tempButtonContainer);
+                    }
+                    tempButtonContainer.remove();
                     closeModal('customAlertModal');
                 };
-
                 okButton.addEventListener('click', onOk, { once: true });
                 cancelButton.addEventListener('click', onCancel, { once: true });
                 openModal('customAlertModal');
             });
-
             if (confirmDelete) {
                 if (!currentUser) { showMessage("Anda harus login.", "error"); return; }
                 const result = await apiCall(`/targets/${targetId}`, 'DELETE');
@@ -591,10 +577,10 @@
             const targetId = document.getElementById('qrisConfirmTargetId').value;
             const amount = document.getElementById('qrisConfirmAmount').value;
             if (!targetId || !amount) { showMessage("Informasi target atau jumlah tidak ditemukan.", "error"); return; }
-            showMessage('Memproses konfirmasi pembayaran Anda...', 'info', 0); // autoCloseDelay = 0 agar tidak auto close
+            showMessage('Memproses konfirmasi pembayaran Anda...', 'info', 0); 
             const payload = { target_id: parseInt(targetId), amount: parseFloat(amount) };
             const result = await apiCall('/transactions/qris/confirm-payment', 'POST', payload);
-            closeModal('customAlertModal'); // Tutup alert "memproses" secara manual
+            closeModal('customAlertModal'); 
             if (result && result.transactionDetails && result.transactionDetails.transaction_id) {
                 showMessage('Konfirmasi pembayaran berhasil! Saldo target telah diperbarui.', 'success');
                 closeModal('qrisPaymentModal');
@@ -628,10 +614,10 @@
             if (parseFloat(amount) > parseFloat(currentBalanceText)) {
                 showMessage("Jumlah penarikan tidak boleh melebihi saldo tersedia.", "error"); return;
             }
-            showMessage('Memproses permintaan penarikan Anda...', 'info', 0); // autoCloseDelay = 0
+            showMessage('Memproses permintaan penarikan Anda...', 'info', 0);
             const payload = { target_id: parseInt(targetId), amount: parseFloat(amount), reason: reason };
             const result = await apiCall('/transactions/withdraw', 'POST', payload);
-            closeModal('customAlertModal'); // Tutup alert "memproses" manual
+            closeModal('customAlertModal');
             if (result && result.transactionDetails && result.transactionDetails.transaction_id) {
                 showMessage('Penarikan berhasil! Saldo target telah diperbarui.', 'success');
                 closeModal('withdrawalModal');
@@ -643,26 +629,32 @@
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) {
-                if (modalId === 'createTargetModal' && !document.getElementById('targetId').value) { // Hanya reset jika ini mode 'create'
-                    document.getElementById('targetForm').reset();
-                    document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
+                // Khusus untuk createTargetModal, reset form dan title HANYA jika bukan mode edit (targetId kosong)
+                if (modalId === 'createTargetModal' && document.getElementById('targetId') && !document.getElementById('targetId').value) {
+                    const targetForm = document.getElementById('targetForm');
+                    if(targetForm) targetForm.reset();
+                    const modalTitle = document.getElementById('modalTitle');
+                    if(modalTitle) modalTitle.textContent = 'Buat Target Tabungan Baru';
                 }
                 modal.style.display = 'flex';
-                setTimeout(() => { modal.classList.add('open'); }, 10);
+                setTimeout(() => { modal.classList.add('open'); }, 10); // Sedikit delay untuk animasi
             }
         }
         function closeModal(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) {
                 modal.classList.remove('open');
-                // Reset form hanya untuk modal yang punya form dan bukan custom alert
+                // Reset form hanya untuk modal yang punya form standar, bukan custom alert
                 if (modalId !== 'customAlertModal') {
                     const form = modal.querySelector('form');
                     if (form) { form.reset(); }
                 }
-                if (modalId === 'createTargetModal') { // Selalu reset ke kondisi 'create' saat ditutup
-                    document.getElementById('targetId').value = '';
-                    document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
+                // Selalu reset createTargetModal ke kondisi "Buat Baru" saat ditutup
+                if (modalId === 'createTargetModal') {
+                    const targetIdInput = document.getElementById('targetId');
+                    if (targetIdInput) targetIdInput.value = '';
+                    const modalTitle = document.getElementById('modalTitle');
+                    if(modalTitle) modalTitle.textContent = 'Buat Target Tabungan Baru';
                 }
             }
         }
@@ -682,7 +674,7 @@
             if(navDashboard) navDashboard.style.backgroundColor = '#4a4a4a';
             if(navHistory) navHistory.style.backgroundColor = '#4a4a4a';
 
-            if (currentAuthToken && currentUser) {
+            if (currentAuthToken && currentUser) { // Logged in
                 if(navDashboard) navDashboard.style.display = 'inline-block';
                 if(navHistory) navHistory.style.display = 'inline-block';
                 if(navLogout) navLogout.style.display = 'inline-block';
@@ -690,18 +682,17 @@
                 if(navToLogin) navToLogin.style.display = 'none';
                 
                 const activeModal = document.querySelector('.modal.open');
-                if (!activeModal) {
-                    if (pageId === 'dashboardPage' && navDashboard) {
-                        navDashboard.style.backgroundColor = '#00bcd4';
+                if (!activeModal) { // Hanya proses navigasi jika tidak ada modal yang terbuka
+                    if (pageId === 'dashboardPage') {
+                        if(navDashboard) navDashboard.style.backgroundColor = '#00bcd4';
                         loadTargets(); // Muat target saat dashboard aktif
-                    } else if (pageId === 'historyPage' && navHistory) {
-                        navHistory.style.backgroundColor = '#00bcd4';
-                        loadTransactionHistory(1);
+                    } else if (pageId === 'historyPage') {
+                        if(navHistory) navHistory.style.backgroundColor = '#00bcd4';
+                        loadTransactionHistory(1); // Muat riwayat saat halaman riwayat dibuka
                     } else if (pageId !== 'loginPinPage' && pageId !== 'registerPinPage' && document.getElementById('dashboardPage')) {
-                         // Jika halaman tidak dikenal dan sudah login, arahkan ke dashboard
-                        if (pageId !== 'dashboardPage') showPage('dashboardPage');
+                        if (pageId !== 'dashboardPage') showPage('dashboardPage'); // Default ke dashboard
                     }
-                } else if (pageId === 'historyPage' && !activeModal) {
+                } else if (pageId === 'historyPage' && !activeModal){ // Untuk kasus khusus jika navigasi terjadi saat modal QRIS tertutup
                      loadTransactionHistory(1);
                 }
 
@@ -720,7 +711,6 @@
 
         // --- Event Listeners Setup ---
         function setupEventListeners() {
-            // Forms
             const loginForm = document.getElementById('loginPinForm'); if(loginForm) loginForm.addEventListener('submit', handlePinLogin);
             const registerForm = document.getElementById('registerPinForm'); if(registerForm) registerForm.addEventListener('submit', handlePinRegister);
             const targetForm = document.getElementById('targetForm'); if(targetForm) targetForm.addEventListener('submit', handleTargetForm);
@@ -728,12 +718,8 @@
             const btnConfirmQrisPaid = document.getElementById('btnConfirmQrisPaid'); if(btnConfirmQrisPaid) btnConfirmQrisPaid.addEventListener('click', handleQrisUserConfirmation);
             const withdrawalForm = document.getElementById('withdrawalForm'); if (withdrawalForm) withdrawalForm.addEventListener('submit', handleWithdrawalForm);
             const customAlertOkButton = document.getElementById('customAlertOkButton'); if(customAlertOkButton) customAlertOkButton.addEventListener('click', () => closeModal('customAlertModal'));
-
-            // Modal Close Buttons
             document.querySelectorAll('.modal .close-button').forEach(button => button.addEventListener('click', () => closeModal(button.closest('.modal').id)));
             window.addEventListener('click', (event) => { document.querySelectorAll('.modal').forEach(modal => { if (event.target == modal) closeModal(modal.id); }); });
-            
-            // Navigation Links/Buttons
             const navLogoutButton = document.getElementById('navLogoutButton'); if(navLogoutButton) navLogoutButton.addEventListener('click', () => handleLogout());
             const linkToRegister = document.getElementById('linkToRegisterPage'); if(linkToRegister) linkToRegister.addEventListener('click', (e) => { e.preventDefault(); showPage('registerPinPage'); });
             const linkToLogin = document.getElementById('linkToLoginPage'); if(linkToLogin) linkToLogin.addEventListener('click', (e) => { e.preventDefault(); showPage('loginPinPage'); });
@@ -741,17 +727,12 @@
             const navToLoginButton = document.getElementById('navToLoginButton'); if(navToLoginButton) navToLoginButton.addEventListener('click', () => showPage('loginPinPage'));
             const navDashboardButton = document.getElementById('navDashboardButton'); if(navDashboardButton) navDashboardButton.addEventListener('click', () => showPage('dashboardPage'));
             const navHistoryButton = document.getElementById('navHistoryButton'); if(navHistoryButton) navHistoryButton.addEventListener('click', () => showPage('historyPage'));
-
-            // Pagination Buttons for History
             const prevPageBtn = document.getElementById('prevPageButton'); if(prevPageBtn) prevPageBtn.addEventListener('click', () => { if (currentTransactionPage > 1) loadTransactionHistory(currentTransactionPage - 1); });
             const nextPageBtn = document.getElementById('nextPageButton'); if(nextPageBtn) nextPageBtn.addEventListener('click', () => { loadTransactionHistory(currentTransactionPage + 1); });
-
-            // Open Create Target Modal Button
             const btnOpenCreateTargetModal = document.getElementById('btnOpenCreateTargetModal');
             if(btnOpenCreateTargetModal) {
                 btnOpenCreateTargetModal.addEventListener('click', () => {
                     if (!currentAuthToken || !currentUser) { showMessage("Anda harus login untuk membuat target.", "error"); showPage('loginPinPage'); return; }
-                    // Persiapan modal untuk "Buat Baru" secara eksplisit
                     document.getElementById('targetForm').reset();
                     document.getElementById('targetId').value = '';
                     document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
@@ -769,4 +750,3 @@
     </script>
 </body>
 </html>
-
