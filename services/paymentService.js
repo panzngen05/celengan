@@ -3,80 +3,110 @@
 const pool = require('../config/db'); // Pastikan path ini benar
 
 /**
- * Mengkonfirmasi deposit ke target setelah pembayaran (manual atau QRIS konfirmasi user).
- * Fungsi ini akan mengupdate saldo target dan mencatat transaksi.
+ * Mengkonfirmasi deposit ke target.
  * @param {number} userId ID pengguna
  * @param {number} targetId ID target
  * @param {number} amount Jumlah yang dideposit
  * @param {string} description Deskripsi transaksi
- * @param {string} paymentRef Referensi pembayaran (misal, QRIS_USER_CONFIRMED_XYZ atau MANUAL_XYZ)
- * @returns {Promise<object>} Hasil operasi, termasuk ID transaksi baru
- * @throws {Error} Jika terjadi kesalahan selama proses
+ * @param {string} paymentRef Referensi pembayaran
+ * @returns {Promise<object>} Hasil operasi
  */
 async function confirmTargetDeposit(userId, targetId, amount, description, paymentRef) {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
+        const [targets] = await connection.query('SELECT * FROM targets WHERE id = ? AND user_id = ? FOR UPDATE', [targetId, userId]);
+        if (targets.length === 0) throw new Error('Target tidak ditemukan atau bukan milik pengguna yang sah.');
+        
+        const target = targets[0];
+        const newJumlahTerkumpul = parseFloat(target.jumlah_terkumpul) + parseFloat(amount);
+        let newStatus = target.status;
 
-        const [targets] = await connection.query(
-            'SELECT * FROM targets WHERE id = ? AND user_id = ? FOR UPDATE',
-            [targetId, userId]
+        if (newJumlahTerkumpul >= parseFloat(target.jumlah_target) && target.status !== 'tercapai') {
+            newStatus = 'tercapai';
+        } else if (target.status === 'tercapai' && newJumlahTerkumpul < parseFloat(target.jumlah_target)){
+             newStatus = 'aktif'; // Jika jadi di bawah target lagi (misal setelah penarikan, lalu deposit kecil)
+        } else if (target.status !== 'tercapai' && newJumlahTerkumpul < parseFloat(target.jumlah_target)) {
+            newStatus = 'aktif'; // Pastikan tetap aktif jika belum tercapai
+        }
+
+
+        await connection.query('UPDATE targets SET jumlah_terkumpul = ?, status = ? WHERE id = ?', [newJumlahTerkumpul, newStatus, targetId]);
+        
+        const [result] = await connection.query(
+            'INSERT INTO transactions (target_id, user_id, jenis_transaksi, jumlah, deskripsi, payment_gateway_ref) VALUES (?, ?, ?, ?, ?, ?)',
+            [targetId, userId, 'DEPOSIT', parseFloat(amount), description, paymentRef]
         );
+        await connection.commit();
+        return { message: 'Deposit berhasil dikonfirmasi dan dicatat.', transaction_id: result.insertId, target_id: targetId, new_jumlah_terkumpul: newJumlahTerkumpul, target_status: newStatus };
+    } catch (error) {
+        await connection.rollback();
+        console.error("Error dalam proses konfirmasi deposit (paymentService):", error.message);
+        throw new Error(error.message || 'Gagal mengkonfirmasi deposit ke target.');
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
+/**
+ * Memproses penarikan dana dari target tabungan.
+ * @param {number} userId ID pengguna
+ * @param {number} targetId ID target
+ * @param {number} amount Jumlah yang ditarik
+ * @param {string} reason Alasan penarikan (wajib)
+ * @returns {Promise<object>} Hasil operasi
+ */
+async function processWithdrawal(userId, targetId, amount, reason) {
+    if (!reason || reason.trim() === "") {
+        throw new Error('Alasan penarikan wajib diisi.');
+    }
+    if (parseFloat(amount) <= 0) {
+        throw new Error('Jumlah penarikan harus positif.');
+    }
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [targets] = await connection.query('SELECT * FROM targets WHERE id = ? AND user_id = ? FOR UPDATE', [targetId, userId]);
 
         if (targets.length === 0) {
             throw new Error('Target tidak ditemukan atau bukan milik pengguna yang sah.');
         }
         const target = targets[0];
 
-        // Meskipun konfirmasi manual, tetap cek status target sebelumnya
-        if (target.status === 'tercapai' && parseFloat(target.jumlah_terkumpul) >= parseFloat(target.jumlah_target)) {
-            // Jika Anda ingin mencegah deposit ke target yang sudah tercapai penuh
-            // throw new Error('Target sudah tercapai penuh, tidak bisa melakukan deposit lagi.');
-             console.warn(`Melakukan deposit ke target (${targetId}) yang statusnya sudah 'tercapai'. Saldo akan tetap bertambah.`);
+        if (parseFloat(target.jumlah_terkumpul) < parseFloat(amount)) {
+            throw new Error('Saldo tidak mencukupi untuk melakukan penarikan sejumlah ini.');
         }
 
-        const newJumlahTerkumpul = parseFloat(target.jumlah_terkumpul) + parseFloat(amount);
+        const newJumlahTerkumpul = parseFloat(target.jumlah_terkumpul) - parseFloat(amount);
         let newStatus = target.status;
 
-        if (newJumlahTerkumpul >= parseFloat(target.jumlah_target)) {
-            newStatus = 'tercapai';
+        if (newJumlahTerkumpul < parseFloat(target.jumlah_target) && target.status === 'tercapai') {
+            newStatus = 'aktif';
         }
-        // Jika sebelumnya sudah 'tercapai' dan ditambah lagi, status tetap 'tercapai'
-        else if (target.status === 'tercapai' && newJumlahTerkumpul < parseFloat(target.jumlah_target)){
-             newStatus = 'aktif'; // Jika saldo jadi di bawah target lagi (misal ada penarikan nanti)
-        }
-
 
         await connection.query(
             'UPDATE targets SET jumlah_terkumpul = ?, status = ? WHERE id = ?',
             [newJumlahTerkumpul, newStatus, targetId]
         );
 
+        const withdrawalRef = `WITHDRAW-${userId}-${targetId}-${Date.now()}`;
         const [result] = await connection.query(
             'INSERT INTO transactions (target_id, user_id, jenis_transaksi, jumlah, deskripsi, payment_gateway_ref) VALUES (?, ?, ?, ?, ?, ?)',
-            [targetId, userId, 'deposit', parseFloat(amount), description, paymentRef]
+            [targetId, userId, 'WITHDRAWAL', parseFloat(amount), reason, withdrawalRef]
         );
-
         await connection.commit();
-
-        return {
-            message: 'Deposit berhasil dikonfirmasi dan dicatat.',
-            transaction_id: result.insertId,
-            target_id: targetId,
-            new_jumlah_terkumpul: newJumlahTerkumpul,
-            target_status: newStatus
-        };
+        return { message: 'Penarikan berhasil dicatat.', transaction_id: result.insertId, target_id: targetId, new_jumlah_terkumpul: newJumlahTerkumpul, target_status: newStatus };
     } catch (error) {
         await connection.rollback();
-        console.error("Error dalam proses konfirmasi deposit (paymentService):", error.message);
-        throw new Error(error.message || 'Gagal mengkonfirmasi deposit ke target.');
+        console.error("Error dalam proses penarikan (paymentService):", error.message);
+        throw new Error(error.message || 'Gagal memproses penarikan dana.');
     } finally {
-        if (connection) {
-            connection.release();
-        }
+        if (connection) connection.release();
     }
 }
 
 module.exports = {
-    confirmTargetDeposit
+    confirmTargetDeposit,
+    processWithdrawal
 };
