@@ -1,7 +1,7 @@
 // celengan-api/controllers/transactionController.js
 const pool = require('../config/db');
-const crypto = require('crypto'); // Untuk referensi unik jika perlu
-const { confirmTargetDeposit } = require('../services/paymentService'); // Pastikan path ini benar
+const crypto = require('crypto');
+const { confirmTargetDeposit, processWithdrawal } = require('../services/paymentService');
 
 // @desc    Get all transactions for the logged-in user
 // @route   GET /api/transactions
@@ -71,7 +71,7 @@ const makeManualDeposit = async (req, res) => {
     try {
         const paymentRef = `MANUAL-${user_id}-${Date.now()}`;
         const result = await confirmTargetDeposit(user_id, parseInt(target_id), parseFloat(jumlah), deskripsi || 'Deposit manual', paymentRef);
-        res.status(201).json(result);
+        res.status(201).json(result); // Mengembalikan hasil dari service
     } catch (error) {
         res.status(500).json({ message: error.message || 'Server error processing manual deposit' });
     }
@@ -81,7 +81,7 @@ const makeManualDeposit = async (req, res) => {
 // @route   POST /api/transactions/qris/confirm-payment
 // @access  Private
 const confirmQrisPaymentByUser = async (req, res) => {
-    const { target_id, amount } = req.body; // `ourTransactionRef` bisa dibuat di sini atau opsional dari frontend
+    const { target_id, amount } = req.body;
     const user_id = req.user.id;
 
     if (!target_id || !amount || parseFloat(amount) <= 0) {
@@ -89,11 +89,9 @@ const confirmQrisPaymentByUser = async (req, res) => {
     }
 
     try {
-        // Buat referensi pembayaran unik
         const paymentReference = `QRIS_USERCONF-${user_id}-${target_id}-${Date.now()}-${crypto.randomBytes(2).toString('hex')}`;
         const description = `Deposit QRIS (dikonfirmasi pengguna) Rp${parseFloat(amount)}`;
 
-        // Panggil service yang sama dengan deposit manual
         const result = await confirmTargetDeposit(
             user_id,
             parseInt(target_id),
@@ -102,31 +100,64 @@ const confirmQrisPaymentByUser = async (req, res) => {
             paymentReference
         );
 
-        // Hapus tabel qris_payment_attempts atau data terkait jika sudah tidak dibutuhkan
-        // Misal, jika Anda masih menggunakan tabel itu untuk referensi sementara sebelum konfirmasi:
-        // await pool.query('DELETE FROM qris_payment_attempts WHERE our_transaction_ref = ? AND user_id = ?', [req.body.ourTransactionRef, user_id]);
-        // Namun dengan alur baru ini, tabel qris_payment_attempts tidak lagi sentral untuk QRIS.
-
         res.status(200).json({
             message: 'Konfirmasi pembayaran QRIS Anda telah diterima dan saldo target diperbarui.',
-            transactionDetails: result // Mengembalikan detail transaksi yang dibuat
+            transactionDetails: result // Mengembalikan detail dari service
         });
 
     } catch (error) {
-        // confirmTargetDeposit sudah melakukan console.error
         res.status(500).json({ message: error.message || 'Gagal memproses konfirmasi pembayaran QRIS Anda.' });
     }
 };
 
-// Endpoint untuk mengambil konfigurasi dasar, termasuk URL QRIS statis
-// @desc    Get app configuration
-// @route   GET /api/config
-// @access  Public or Private (tergantung kebutuhan)
+// @desc    Withdraw funds from a target
+// @route   POST /api/transactions/withdraw
+// @access  Private
+const handleWithdrawal = async (req, res) => {
+    const { target_id, amount, reason } = req.body;
+    const user_id = req.user.id;
+
+    if (!target_id || !amount || !reason) {
+        return res.status(400).json({ message: 'Target ID, jumlah, dan alasan penarikan wajib diisi.' });
+    }
+    if (parseFloat(amount) <= 0) {
+        return res.status(400).json({ message: 'Jumlah penarikan harus positif.' });
+    }
+    if (reason.trim() === "") { // Pastikan alasan tidak hanya spasi
+        return res.status(400).json({ message: 'Alasan penarikan tidak boleh kosong.' });
+    }
+
+
+    try {
+        const result = await processWithdrawal(
+            user_id,
+            parseInt(target_id),
+            parseFloat(amount),
+            reason
+        );
+        res.status(200).json({
+            message: 'Penarikan berhasil.',
+            transactionDetails: result // Mengembalikan detail dari service
+        });
+    } catch (error) {
+        res.status(error.message.includes("Saldo tidak mencukupi") || error.message.includes("Alasan penarikan wajib diisi") ? 400 : 500)
+           .json({ message: error.message || 'Gagal memproses penarikan Anda.' });
+    }
+};
+
+// @desc    Get app configuration (like static QRIS URL)
+// @route   GET /api/transactions/config (atau /api/config)
+// @access  Public or Private
 const getAppConfig = (req, res) => {
     const staticQrisImageUrl = process.env.STATIC_QRIS_IMAGE_URL;
-    if (!staticQrisImageUrl || staticQrisImageUrl === "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI") {
-        console.warn("PERINGATAN: STATIC_QRIS_IMAGE_URL belum diatur dengan benar di .env");
-        return res.status(500).json({ message: "Konfigurasi QRIS belum lengkap di server."});
+    if (!staticQrisImageUrl || staticQrisImageUrl === "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI" || staticQrisImageUrl.trim() === "") {
+        console.warn("PERINGATAN SERVER: STATIC_QRIS_IMAGE_URL belum diatur dengan benar di .env atau nilainya placeholder.");
+        // Untuk klien, kita tidak kirim error 500 jika hanya config ini yang hilang, tapi kirim data parsial atau pesan.
+        // Atau, jika ini kritikal, kirim 503 Service Unavailable.
+        return res.status(200).json({ 
+            staticQrisImageUrl: null,
+            warning: "Konfigurasi URL QRIS di server belum lengkap. Fitur QRIS mungkin tidak berfungsi."
+        });
     }
     res.json({
         staticQrisImageUrl: staticQrisImageUrl
@@ -138,5 +169,6 @@ module.exports = {
     makeManualDeposit,
     getUserTransactions,
     confirmQrisPaymentByUser,
-    getAppConfig, // Tambahkan ini
+    handleWithdrawal,
+    getAppConfig,
 };
