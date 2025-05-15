@@ -2,8 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celengan Digital Saya (Final Lengkap)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Celengan Digital Saya (Responsif)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -12,65 +11,65 @@
     <style>
         /* Reset CSS Dasar & Tema Gelap */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
             font-family: 'Nunito Sans', sans-serif;
-            background-color: #1a1a1a; /* Latar belakang gelap utama */
-            color: #e0e0e0;       /* Teks terang utama */
+            background-color: #1a1a1a; 
+            color: #e0e0e0;      
             line-height: 1.6;
-            padding-top: 80px; /* Ruang untuk nav fixed jika ada */
+            padding-top: 70px; /* Sesuaikan dengan tinggi nav setelah fix */
             padding-bottom: 20px;
         }
 
-        .page-container { /* Wrapper untuk konten halaman agar bisa di-center jika pendek */
+        .page-container { 
             display: flex;
             flex-direction: column; 
-            align-items: center; /* Pusatkan konten utama */
+            align-items: center; 
             width: 100%;
-            min-height: calc(100vh - 100px); /* Tinggi viewport dikurangi padding atas & bawah body */
+            padding: 10px; /* Padding untuk .page-container di mobile */
         }
 
         .auth-container, .dashboard-container, .history-container, .modal-content {
-            background-color: #2c2c2c; /* Latar belakang kontainer lebih terang dari body */
-            padding: 30px 40px;
+            background-color: #2c2c2c; 
+            padding: 20px; /* Padding default, akan disesuaikan media query */
             border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); /* Bayangan lebih gelap */
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); 
             width: 100%;
-            border: 1px solid #444; /* Border subtil */
+            border: 1px solid #444; 
         }
-        .auth-container { max-width: 450px; margin-top: 20px; margin-bottom: 20px; }
+        .auth-container { max-width: 450px; margin: 20px auto; }
         .dashboard-container, .history-container { max-width: 900px; margin: 20px auto; }
 
-
         h1, h2, h3 { color: #ffffff; margin-bottom: 20px; } 
-        h1 { font-size: 28px; font-weight: 800; text-align: center; }
-        h2 { font-size: 24px; font-weight: 700; }
+        h1 { font-size: 26px; /* Sedikit lebih kecil untuk mobile-first */ font-weight: 800; text-align: center; }
+        h2 { font-size: 22px; /* Sedikit lebih kecil */ font-weight: 700; }
         .target-card h3 { font-size: 18px; font-weight: 700; text-align: left; color: #f5f5f5; }
 
         /* Form Styling Tema Gelap */
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #b0b0b0; }
+        .form-group { margin-bottom: 15px; } /* Kurangi margin bottom */
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #b0b0b0; font-size: 14px; }
         .form-group input[type="text"],
         .form-group input[type="email"],
         .form-group input[type="password"],
         .form-group input[type="number"],
         .form-group input[type="date"],
         .form-group textarea {
-            width: 100%; padding: 12px 15px;
+            width: 100%; padding: 10px 12px; /* Padding lebih kecil */
             background-color: #3a3a3a; color: #e0e0e0;
-            border: 1px solid #555; border-radius: 8px; font-size: 16px;
+            border: 1px solid #555; border-radius: 6px; /* Radius lebih kecil */ font-size: 15px; /* Font size input */
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
             font-family: 'Nunito Sans', sans-serif; 
         }
         .form-group input::placeholder, .form-group textarea::placeholder { color: #888; }
         .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #00acc1; box-shadow: 0 0 0 2px rgba(0, 172, 193, 0.3); }
-        .form-text { text-align: center; margin-top: 20px; font-size: 14px; color: #a0a0a0; }
+        .form-text { text-align: center; margin-top: 15px; font-size: 13px; color: #a0a0a0; }
         .form-text a { color: #00bcd4; text-decoration: none; font-weight: 600; }
         .form-text a:hover { text-decoration: underline; }
 
         /* Tombol Tema Gelap */
-        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; font-size: 16px; font-weight: 700; line-height: 1.5; text-align: center; text-decoration: none; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; /* Padding disesuaikan */ font-size: 15px; /* Font size disesuaikan */ font-weight: 700; line-height: 1.5; text-align: center; text-decoration: none; border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; }
         .btn-full-width { width: 100%; }
-        .btn-sm { padding: 8px 16px; font-size: 14px; width: auto; }
+        .btn-sm { padding: 6px 12px; font-size: 13px; width: auto; }
         .btn i { margin-right: 8px; }
         .btn-primary { background-color: #00bcd4; color: #111; box-shadow: 0px 4px 12px rgba(0, 188, 212, 0.3); }
         .btn-primary:hover { background-color: #00acc1; transform: translateY(-1px); }
@@ -84,68 +83,105 @@
         .btn-secondary:disabled, .btn-secondary[disabled] { background-color: transparent !important; color: #757575 !important; border-color: #757575 !important; }
 
         /* Dashboard & History */
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
-        .page-header h2 { text-align: left; margin-bottom: 5px; color: #f5f5f5;}
-        #dashboardUserGreeting { font-size: 16px; font-weight: normal; color: #b0b0b0; width: 100%; margin-bottom: 15px; }
-        .target-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .target-card { background-color: #3a3a3a; padding: 20px; border-radius: 10px; border: 1px solid #555; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
-        .target-info { font-size: 14px; color: #b0b0b0; margin-bottom: 8px; } .target-info strong { color: #e0e0e0; }
-        .progress-bar-container { width: 100%; background-color: #555; border-radius: 25px; height: 12px; margin-top: 10px; margin-bottom: 5px; overflow: hidden; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; /* Tambah gap untuk wrapping */ }
+        .page-header h2 { text-align: left; margin-bottom: 0; color: #f5f5f5; flex-grow: 1; } /* Judul bisa membesar */
+        #dashboardUserGreeting { font-size: 15px; font-weight: normal; color: #b0b0b0; width: 100%; margin-bottom: 15px; }
+        .target-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* Sedikit perkecil min card width */ gap: 15px; }
+        .target-card { background-color: #3a3a3a; padding: 15px; border-radius: 10px; border: 1px solid #555; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+        .target-info { font-size: 13px; color: #b0b0b0; margin-bottom: 6px; } .target-info strong { color: #e0e0e0; }
+        .progress-bar-container { width: 100%; background-color: #555; border-radius: 25px; height: 10px; margin-top: 8px; margin-bottom: 4px; overflow: hidden; }
         .progress-bar { background-color: #00bcd4; height: 100%; border-radius: 25px; width: 0%; transition: width 0.5s ease-in-out; }
-        .progress-text { font-size: 12px; color: #a0a0a0; text-align: right; margin-bottom: 15px; }
+        .progress-text { font-size: 11px; color: #a0a0a0; text-align: right; margin-bottom: 12px; }
+        .target-actions { margin-top: auto; padding-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
         
-        .target-actions {
-            margin-top: auto; 
-            padding-top: 15px; 
-            display: flex;
-            flex-wrap: wrap; 
-            gap: 10px; 
-        }
-
         /* Riwayat Transaksi */
-        .transaction-table-container { overflow-x: auto; }
+        .transaction-table-container { overflow-x: auto; width: 100%; }
         .transaction-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .transaction-table th, .transaction-table td { padding: 10px 12px; border: 1px solid #444; text-align: left; font-size: 14px; white-space: nowrap; }
+        .transaction-table th, .transaction-table td { padding: 8px 10px; /* Padding lebih kecil */ border: 1px solid #444; text-align: left; font-size: 13px; /* Font lebih kecil */ white-space: nowrap; }
         .transaction-table th { background-color: #3a3a3a; color: #00bcd4; font-weight: 700; }
         .transaction-table tr:nth-child(even) { background-color: #333333; }
         .transaction-table .amount-deposit { color: #81c784; font-weight: bold; }
         .transaction-table .amount-withdrawal { color: #e57373; font-weight: bold; }
-        .transaction-table td:nth-child(5) { white-space: normal; min-width: 200px; } 
-        .pagination-controls { margin-top: 20px; text-align: center; display: flex; justify-content: center; align-items: center; gap: 10px;}
+        .transaction-table td:nth-child(5) { white-space: normal; min-width: 150px; } 
+        .pagination-controls { margin-top: 20px; text-align: center; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; /* Pagination bisa wrap */}
         #loadingHistoryText, #noHistoryText { text-align: center; margin-top: 20px; color: #aaa;}
 
         /* Modal & Animasi */
-        .modal { display: flex; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; padding: 20px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; }
+        .modal { display: flex; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; padding: 10px; /* Padding modal dikurangi di mobile */ opacity: 0; visibility: hidden; transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; }
         .modal.open { opacity: 1; visibility: visible; transition-delay: 0s; }
-        .modal-content { position: relative; transform: translateY(-30px) scale(0.95); opacity: 0; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .modal-content { position: relative; transform: translateY(-30px) scale(0.95); opacity: 0; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); max-width: 95%; /* Batasi lebar modal di mobile */}
         .modal.open .modal-content { transform: translateY(0) scale(1); opacity: 1; }
-        .modal-content h2 { text-align: center; color: #f5f5f5; }
-        .close-button { color: #777; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 15px; right: 20px; }
+        .modal-content h2 { text-align: center; color: #f5f5f5; font-size: 20px; /* H2 di modal lebih kecil */}
+        .close-button { color: #777; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; } /* Posisi close button disesuaikan */
         .close-button:hover, .close-button:focus { color: #ccc; text-decoration: none; cursor: pointer; }
 
         /* QRIS Modal */
-        #staticQrisImage { max-width: 250px; max-height: 250px; margin: 15px auto; display: block; border: 1px solid #555; padding: 5px; background-color: white; }
+        #staticQrisImage { max-width: 200px; max-height: 200px; /* QRIS lebih kecil di mobile */ margin: 15px auto; display: block; border: 1px solid #555; padding: 5px; background-color: white; }
         #qrisPaymentModal p { color: #b0b0b0; } #qrisPaymentModal strong { color: #e0e0e0; }
 
         /* Custom Alert Modal Styling */
-        #customAlertModal .modal-content { max-width: 400px; padding: 25px; }
-        #customAlertModal h3 { margin-top: 0; font-size: 20px; display: flex; align-items: center; }
-        #customAlertIcon { margin-right: 10px; font-size: 24px; }
+        #customAlertModal .modal-content { max-width: 360px; padding: 20px; }
+        #customAlertModal h3 { margin-top: 0; font-size: 18px; display: flex; align-items: center; }
+        #customAlertIcon { margin-right: 10px; font-size: 22px; }
         #customAlertModal .modal-content.alert-modal-success #customAlertTitle { color: #4CAF50; }
         #customAlertModal .modal-content.alert-modal-error #customAlertTitle { color: #f44336; }
         #customAlertModal .modal-content.alert-modal-info #customAlertTitle { color: #00bcd4; }
-        #customAlertMessage { margin-top: 15px; margin-bottom: 25px; font-size: 16px; color: #c0c0c0; text-align: center; }
-        #customAlertOkButton { width: auto; padding: 10px 30px; display: block; margin: 0 auto; }
+        #customAlertMessage { margin-top: 12px; margin-bottom: 20px; font-size: 15px; color: #c0c0c0; text-align: center; }
+        #customAlertOkButton { width: auto; padding: 8px 25px; display: block; margin: 0 auto; font-size: 14px; }
 
         /* Navigasi */
-        .simple-nav { position: fixed; top: 0; left: 0; width: 100%; background: #2c2c2c; padding: 10px 20px; border-bottom: 1px solid #444; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 1001; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
-        .simple-nav button { background: #4a4a4a; color: #e0e0e0; border: 1px solid #555; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background-color 0.2s ease; }
+        .simple-nav { position: fixed; top: 0; left: 0; width: 100%; background: #2c2c2c; padding: 8px 15px; /* Padding nav disesuaikan */ border-bottom: 1px solid #444; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 1001; display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; /* Nav bisa wrap */ }
+        .simple-nav button { background: #4a4a4a; color: #e0e0e0; border: 1px solid #555; padding: 6px 12px; /* Padding tombol nav */ border-radius: 6px; cursor: pointer; font-size: 13px; /* Font tombol nav */ font-weight: 600; transition: background-color 0.2s ease; }
         .simple-nav button:hover { background: #5a5a5a; }
-        .simple-nav .nav-app-title { margin-right: auto; font-size: 18px; font-weight: 700; color: #00bcd4; }
+        .simple-nav .nav-app-title { margin-right: auto; font-size: 16px; /* Judul app lebih kecil */ font-weight: 700; color: #00bcd4; }
 
         .page-section { display: none; }
-        .page-section.active { display: block; animation: fadeInPage 0.5s ease-in-out; }
-        @keyframes fadeInPage { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page-section.active { display: block; animation: fadeInPage 0.4s ease-in-out; }
+        @keyframes fadeInPage { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Media Queries untuk Desktop (Layar Lebih Besar) */
+        @media (min-width: 768px) {
+            .page-container { padding: 20px; }
+            .auth-container, .dashboard-container, .history-container, .modal-content {
+                 padding: 30px 40px; /* Kembalikan padding normal */
+            }
+            .auth-container { max-width: 450px; }
+            .dashboard-container, .history-container { max-width: 900px; }
+            #customAlertModal .modal-content { max-width: 400px; }
+            .modal-content { max-width: 500px; } /* Modal content bisa lebih lebar di desktop */
+
+
+            h1 { font-size: 28px; }
+            h2 { font-size: 24px; }
+            .modal-content h2 { font-size: 22px; }
+            #customAlertModal h3 { font-size: 20px; }
+            #customAlertMessage { font-size: 16px; }
+
+            .form-group label { font-size: initial; } /* Kembalikan ke default jika perlu */
+            .form-group input[type="text"],
+            .form-group input[type="email"],
+            .form-group input[type="password"],
+            .form-group input[type="number"],
+            .form-group input[type="date"],
+            .form-group textarea {
+                padding: 12px 15px;
+                font-size: 16px;
+                border-radius: 8px;
+            }
+            .form-text { font-size: 14px; }
+            .btn { padding: 12px 24px; font-size: 16px; border-radius: 8px; }
+            .btn-sm { padding: 8px 16px; font-size: 14px; }
+            #customAlertOkButton { padding: 10px 30px; font-size: 16px; }
+
+
+            .simple-nav { padding: 10px 20px; gap: 10px; }
+            .simple-nav button { padding: 8px 15px; font-size: 14px; }
+            .simple-nav .nav-app-title { font-size: 18px; }
+
+            #staticQrisImage { max-width: 250px; max-height: 250px; } /* Ukuran QRIS normal di desktop */
+            .transaction-table th, .transaction-table td { padding: 10px 12px; font-size: 14px; }
+        }
+
     </style>
 </head>
 <body>
@@ -235,14 +271,13 @@
     </div>
     
     <div id="customAlertModal" class="modal">
-        <div class="modal-content">
-            <h3 id="customAlertTitle"><i id="customAlertIcon" class="fas"></i> <span style="margin-left: 8px;">Judul Alert</span></h3>
+        <div class="modal-content"> <h3 id="customAlertTitle"><i id="customAlertIcon" class="fas"></i> <span style="margin-left: 8px;">Judul Alert</span></h3>
             <p id="customAlertMessage">Isi pesan alert di sini.</p>
             <button id="customAlertOkButton" class="btn btn-primary">OK</button>
         </div>
     </div>
 
-</div>    <script>
+</div> <script>
         // --- Global Variables & Configuration ---
         const API_BASE_URL = 'https://celengan.up.railway.app/api'; // GANTI DENGAN URL BACKEND ANDA YANG SUDAH DI-DEPLOY!
         let currentAuthToken = localStorage.getItem('celenganAuthToken');
@@ -274,13 +309,10 @@
                 }
                 let data;
                 try {
-                    // Clone respons untuk bisa baca teks jika json() gagal
-                    const clonedResponse = response.clone(); // Harus dilakukan sebelum response dipakai
+                    const clonedResponse = response.clone();
                     data = await response.json();
                 } catch (e) {
                     console.error('Error parsing JSON response:', e);
-                    // Coba baca teks dari respons asli jika clone gagal atau response.text() tidak tersedia di clone
-                    // (beberapa implementasi fetch mungkin hanya mengizinkan body dibaca sekali)
                     try {
                         responseTextForError = await (response.text ? response.text() : clonedResponse.text());
                     } catch (textError) {
@@ -311,48 +343,53 @@
             const modalContent = alertModal.querySelector('.modal-content');
             const okButton = document.getElementById('customAlertOkButton');
             
+            if (!alertModal || !alertTitleSpan || !alertIconEl || !alertMessageEl || !modalContent || !okButton) {
+                console.error("Elemen custom alert tidak ditemukan!");
+                alert(`[${type.toUpperCase()}] ${message}`); // Fallback ke alert biasa
+                return;
+            }
+            
             modalContent.classList.remove('alert-modal-success', 'alert-modal-error', 'alert-modal-info');
 
             if (type === 'success') {
                 alertTitleSpan.textContent = 'Sukses!';
-                if(alertIconEl) alertIconEl.className = 'fas fa-check-circle';
+                alertIconEl.className = 'fas fa-check-circle';
                 modalContent.classList.add('alert-modal-success');
             } else if (type === 'error') {
                 alertTitleSpan.textContent = 'Error!';
-                if(alertIconEl) alertIconEl.className = 'fas fa-exclamation-triangle';
+                alertIconEl.className = 'fas fa-exclamation-triangle';
                 modalContent.classList.add('alert-modal-error');
             } else { 
                 alertTitleSpan.textContent = 'Informasi';
-                if(alertIconEl) alertIconEl.className = 'fas fa-info-circle';
+                alertIconEl.className = 'fas fa-info-circle';
                 modalContent.classList.add('alert-modal-info');
             }
             alertMessageEl.textContent = message;
-            console.log(`CustomAlert [${type.toUpperCase()}]: ${message}`); // Tetap log ke console
+            console.log(`CustomAlert [${type.toUpperCase()}]: ${message}`);
             openModal('customAlertModal');
 
             if (autoCloseDelay > 0) {
-                if(okButton) okButton.style.display = 'none'; // Sembunyikan tombol OK jika auto close
+                okButton.style.display = 'none';
                 setTimeout(() => {
-                    // Pastikan modal masih terbuka sebelum menutup (mungkin sudah ditutup manual)
                     if (document.getElementById('customAlertModal').classList.contains('open')) {
                         closeModal('customAlertModal');
                     }
-                    if(okButton) okButton.style.display = 'block'; // Kembalikan tombol OK
+                    okButton.style.display = 'block';
                 }, autoCloseDelay);
             } else {
-                 if(okButton) okButton.style.display = 'block'; // Tampilkan tombol OK jika tidak auto close
+                 okButton.style.display = 'block';
             }
         }
 
         // --- Config Fetcher ---
         async function fetchAppConfig() {
-            const configData = await apiCall('/transactions/config', 'GET', null, false);
+            const configData = await apiCall('/transactions/config', 'GET', null, false); // Endpoint config, tidak perlu auth
             if (configData && configData.staticQrisImageUrl) {
                 STATIC_QRIS_IMAGE_URL = configData.staticQrisImageUrl;
                 console.log("Static QRIS Image URL loaded:", STATIC_QRIS_IMAGE_URL);
             } else {
                 console.error("Gagal mengambil URL QRIS statis dari server atau URL tidak valid. Pesan dari server:", configData ? configData.warning || "Tidak ada URL." : "Tidak ada respons config.");
-                // showMessage("Konfigurasi pembayaran QRIS tidak lengkap. Fitur QRIS mungkin tidak berfungsi.", "warning"); 
+                // Tidak menampilkan showMessage di sini karena bisa mengganggu saat startup jika ada masalah jaringan awal
             }
         }
 
@@ -370,9 +407,9 @@
                 localStorage.setItem('celenganAuthToken', currentAuthToken);
                 localStorage.setItem('celenganCurrentUser', JSON.stringify(currentUser));
                 showMessage(`Login berhasil! Selamat datang, ${data.nama}.`, 'success', 2000);
-                document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
+                const greetingEl = document.getElementById('dashboardUserGreeting');
+                if (greetingEl) greetingEl.textContent = `Halo, ${currentUser.nama}!`;
                 showPage('dashboardPage');
-                // loadTargets(); // Akan dipanggil oleh showPage('dashboardPage')
             }
             document.getElementById('loginPinForm').reset();
         }
@@ -390,9 +427,9 @@
                 localStorage.setItem('celenganAuthToken', currentAuthToken);
                 localStorage.setItem('celenganCurrentUser', JSON.stringify(currentUser));
                 showMessage('Registrasi berhasil! Selamat datang.', 'success', 2000);
-                document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
+                const greetingEl = document.getElementById('dashboardUserGreeting');
+                if (greetingEl) greetingEl.textContent = `Halo, ${currentUser.nama}!`;
                 showPage('dashboardPage');
-                // loadTargets(); // Akan dipanggil oleh showPage('dashboardPage')
             } else if (data && data.id && !data.token) {
                 showMessage('Registrasi berhasil! Silakan login dengan PIN Anda.', 'success');
                 showPage('loginPinPage');
@@ -411,6 +448,7 @@
             await fetchAppConfig();
             const token = localStorage.getItem('celenganAuthToken');
             const user = JSON.parse(localStorage.getItem('celenganCurrentUser'));
+            const greetingEl = document.getElementById('dashboardUserGreeting');
             if (token && user) {
                 currentAuthToken = token;
                 currentUser = user;
@@ -418,10 +456,10 @@
                 if (userProfile && userProfile.id) {
                     currentUser = userProfile;
                     localStorage.setItem('celenganCurrentUser', JSON.stringify(currentUser));
-                    if(document.getElementById('dashboardUserGreeting')) document.getElementById('dashboardUserGreeting').textContent = `Halo, ${currentUser.nama}!`;
-                    showPage('dashboardPage'); // Default ke dashboard jika sudah login
-                } else { handleLogout(false); } // Token ada tapi tidak valid lagi di backend
-            } else { showPage('loginPinPage'); } // Default ke login jika tidak ada token
+                    if(greetingEl) greetingEl.textContent = `Halo, ${currentUser.nama}!`;
+                    showPage('dashboardPage');
+                } else { handleLogout(false); }
+            } else { showPage('loginPinPage'); }
         }
 
         // --- Target Management Functions ---
@@ -431,8 +469,8 @@
             if (!currentUser) { if(targetListContainer) targetListContainer.innerHTML = '<p style="color: #aaa;">Silakan login untuk melihat target.</p>'; if(noTargetsText) noTargetsText.style.display = 'none'; return; }
             if(targetListContainer) targetListContainer.innerHTML = '<p style="color: #aaa;">Memuat target...</p>';
             
-            const response = await apiCall('/targets', 'GET'); // Backend /api/targets mengembalikan array langsung
-            console.log("[loadTargets] Response from API:", response); 
+            const response = await apiCall('/targets', 'GET');
+            console.log("[loadTargets] Response from API (/api/targets):", response);
 
             if (response && Array.isArray(response)) {
                 if(targetListContainer) targetListContainer.innerHTML = '';
@@ -512,11 +550,11 @@
                 const originalOkHTML = okButton.innerHTML;
                 const originalOkClasses = okButton.className;
                 okButton.innerHTML = '<i class="fas fa-trash"></i> Ya, Hapus';
-                okButton.className = 'btn btn-danger';
+                okButton.className = 'btn btn-danger'; // Ganti kelas
                 let tempButtonContainer = okButton.parentNode.querySelector('.temp-button-container');
                 if (!tempButtonContainer) {
                     tempButtonContainer = document.createElement('div');
-                    tempButtonContainer.className = 'temp-button-container';
+                    tempButtonContainer.className = 'temp-button-container'; // Beri kelas agar bisa dicari lagi
                     tempButtonContainer.style.display = 'flex';
                     tempButtonContainer.style.justifyContent = 'center';
                     tempButtonContainer.style.gap = '10px';
@@ -525,11 +563,17 @@
                 } else {
                     tempButtonContainer.innerHTML = ''; // Bersihkan container jika sudah ada
                 }
-                tempButtonContainer.appendChild(okButton);
+                
+                // Pastikan tombol OK dipindahkan ke dalam container, bukan diduplikasi
+                if (okButton.parentNode !== tempButtonContainer) {
+                    tempButtonContainer.appendChild(okButton);
+                }
+
                 const cancelButton = document.createElement('button');
                 cancelButton.innerHTML = '<i class="fas fa-times"></i> Batal';
                 cancelButton.className = 'btn btn-secondary';
                 tempButtonContainer.appendChild(cancelButton);
+
                 const onOk = () => { cleanup(); resolve(true); };
                 const onCancel = () => { cleanup(); resolve(false); };
                 const cleanup = () => {
@@ -537,9 +581,9 @@
                     cancelButton.removeEventListener('click', onCancel);
                     okButton.innerHTML = originalOkHTML;
                     okButton.className = originalOkClasses;
-                    // Pindahkan OK button kembali ke parent aslinya jika perlu (jika struktur berubah)
-                    if (modalContent.contains(tempButtonContainer)) {
-                         modalContent.appendChild(okButton); // Kembalikan OK ke parent semula
+                    // Kembalikan tombol OK ke parent aslinya (di luar tempButtonContainer)
+                     if (modalContent.contains(tempButtonContainer)) {
+                         modalContent.insertBefore(okButton, tempButtonContainer);
                     }
                     tempButtonContainer.remove();
                     closeModal('customAlertModal');
@@ -556,89 +600,90 @@
         }
 
         // --- QRIS Payment Functions (Simplified Flow) ---
-        function openQrisAmountModal(targetId, targetName) { /* ... kode sama dari #84 ... */ }
-        async function handleQrisAmountForm(event) { /* ... kode sama dari #84 ... */ }
-        async function handleQrisUserConfirmation() { /* ... kode sama dari #84 ... */ }
-        
-        // --- Withdrawal Functions ---
-        function openWithdrawalModal(targetId, targetName, currentBalance) { /* ... kode sama dari #84 ... */ }
-        async function handleWithdrawalForm(event) { /* ... kode sama dari #84 ... */ }
-
-        // --- Transaction History Functions (Dengan logging tambahan) ---
-        async function loadTransactionHistory(page = 1) {
-            const tableBody = document.getElementById('transactionTableBody');
-            const loadingText = document.getElementById('loadingHistoryText');
-            const noHistoryText = document.getElementById('noHistoryText');
-            const paginationControls = document.getElementById('historyPagination');
-
-            console.log(`[loadTransactionHistory] Meminta riwayat untuk halaman: ${page}`);
-
-            if (!currentUser) {
-                if (tableBody) tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #aaa;">Silakan login untuk melihat riwayat.</td></tr>';
-                if (loadingText) loadingText.style.display = 'none';
-                if (noHistoryText) { noHistoryText.textContent = 'Silakan login untuk melihat riwayat.'; noHistoryText.style.display = 'block'; }
-                if (paginationControls) paginationControls.style.display = 'none';
-                return;
+        function openQrisAmountModal(targetId, targetName) {
+            if (!currentUser) { showMessage("Anda harus login untuk melakukan deposit.", "error"); return; }
+            if (!STATIC_QRIS_IMAGE_URL || STATIC_QRIS_IMAGE_URL === "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI" || STATIC_QRIS_IMAGE_URL.trim() === "" || !STATIC_QRIS_IMAGE_URL.startsWith('http')) {
+                showMessage("Fitur pembayaran QRIS saat ini tidak tersedia atau belum dikonfigurasi dengan benar. Harap hubungi admin.", "warning"); return;
             }
-
-            currentTransactionPage = page;
-            if(loadingText) loadingText.style.display = 'block';
-            if(noHistoryText) noHistoryText.style.display = 'none';
-            if(tableBody) tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #aaa;">Memuat riwayat transaksi halaman ${page}...</td></tr>`;
-            if(paginationControls) paginationControls.style.display = 'none';
-
-            const response = await apiCall(`/transactions?page=${page}&limit=${transactionsPerPage}`, 'GET');
-            console.log("[loadTransactionHistory] Respons MENTAH dari backend /api/transactions:", JSON.stringify(response, null, 2));
-
-            if(loadingText) loadingText.style.display = 'none';
-
-            if (response && response.data && Array.isArray(response.data) && response.pagination) {
-                console.log(`[loadTransactionHistory] Menerima ${response.data.length} transaksi, pagination:`, response.pagination);
-                if (response.data.length === 0) {
-                    if (page === 1) {
-                        if(noHistoryText) { noHistoryText.textContent = 'Belum ada riwayat transaksi.'; noHistoryText.style.display = 'block'; }
-                        if(tableBody) tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #aaa;">Belum ada riwayat transaksi.</td></tr>';
-                    } else {
-                        if(tableBody) tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #aaa;">Tidak ada transaksi lagi di halaman ini.</td></tr>';
-                        if(paginationControls) paginationControls.style.display = 'flex';
-                    }
-                } else {
-                    if(noHistoryText) noHistoryText.style.display = 'none';
-                    renderTransactionHistory(response.data, response.pagination);
-                     if(paginationControls && response.pagination.total_pages > 0) {
-                        paginationControls.style.display = 'flex';
-                    }
-                }
+            document.getElementById('qrisAmountTargetId').value = targetId;
+            document.getElementById('qrisAmountTargetName').textContent = targetName;
+            document.getElementById('qrisAmountForm').reset();
+            openModal('qrisAmountModal');
+        }
+        async function handleQrisAmountForm(event) {
+            event.preventDefault();
+            const targetId = document.getElementById('qrisAmountTargetId').value;
+            const amount = document.getElementById('qrisJumlahDeposit').value;
+            const targetName = document.getElementById('qrisAmountTargetName').textContent;
+            if (!amount || parseFloat(amount) < 10000) { showMessage('Jumlah deposit minimal Rp 10.000.', 'error'); return; }
+            if (!STATIC_QRIS_IMAGE_URL || STATIC_QRIS_IMAGE_URL === "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI" || STATIC_QRIS_IMAGE_URL.trim() === "" || !STATIC_QRIS_IMAGE_URL.startsWith('http')) {
+                showMessage("URL Gambar QRIS belum dikonfigurasi. Tidak dapat menampilkan QRIS.", "error"); return;
+            }
+            closeModal('qrisAmountModal');
+            document.getElementById('qrisPaymentTargetNameDisplay').textContent = targetName;
+            document.getElementById('qrisPaymentAmountDisplay').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(amount)}`;
+            document.getElementById('staticQrisImage').src = STATIC_QRIS_IMAGE_URL;
+            document.getElementById('staticQrisImage').style.display = 'block';
+            document.getElementById('qrisConfirmTargetId').value = targetId;
+            document.getElementById('qrisConfirmAmount').value = amount;
+            openModal('qrisPaymentModal');
+        }
+        async function handleQrisUserConfirmation() {
+            if (!currentUser) { showMessage("Sesi tidak valid. Silakan login ulang.", "error"); return; }
+            const targetId = document.getElementById('qrisConfirmTargetId').value;
+            const amount = document.getElementById('qrisConfirmAmount').value;
+            if (!targetId || !amount) { showMessage("Informasi target atau jumlah tidak ditemukan.", "error"); return; }
+            showMessage('Memproses konfirmasi pembayaran Anda...', 'info', 0); 
+            const payload = { target_id: parseInt(targetId), amount: parseFloat(amount) };
+            const result = await apiCall('/transactions/qris/confirm-payment', 'POST', payload);
+            // closeModal('customAlertModal'); // Alert "memproses" akan ditutup oleh alert berikutnya atau jika gagal
+            if (result && result.transactionDetails && result.transactionDetails.transaction_id) {
+                closeModal('customAlertModal'); // Tutup alert "memproses" jika sukses sebelum alert sukses
+                showMessage('Konfirmasi pembayaran berhasil! Saldo target telah diperbarui.', 'success');
+                closeModal('qrisPaymentModal');
+                loadTargets();
             } else {
-                console.error("[loadTransactionHistory] Gagal memuat atau format data riwayat transaksi salah. Respons diterima:", response);
-                if(tableBody) tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #aaa;">Gagal memuat riwayat transaksi. Coba lagi nanti atau periksa console.</td></tr>';
-                if(noHistoryText) { noHistoryText.textContent = 'Gagal memuat riwayat transaksi.'; noHistoryText.style.display = 'block'; }
+                 // Jika gagal, showMessage error dari apiCall akan tampil, tidak perlu tutup manual alert "memproses"
+                 // karena showMessage error akan menggantikannya.
             }
         }
-
-        function renderTransactionHistory(transactions, pagination) {
-            const tableBody = document.getElementById('transactionTableBody');
-            if (!tableBody) { console.error("Elemen tableBody tidak ditemukan untuk render riwayat!"); return; }
-            tableBody.innerHTML = ''; 
-            transactions.forEach(trx => {
-                const row = tableBody.insertRow();
-                const date = new Date(trx.tanggal_transaksi).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-                const amountFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(trx.jumlah);
-                row.insertCell().textContent = date;
-                row.insertCell().textContent = trx.nama_target || '(Target Dihapus)';
-                const typeCell = row.insertCell(); typeCell.textContent = trx.jenis_transaksi;
-                const amountCell = row.insertCell();
-                amountCell.textContent = (trx.jenis_transaksi === 'WITHDRAWAL' ? '-' : '+') + amountFormatted;
-                if (trx.jenis_transaksi === 'DEPOSIT') { amountCell.className = 'amount-deposit'; typeCell.style.color = '#81c784'; }
-                else if (trx.jenis_transaksi === 'WITHDRAWAL') { amountCell.className = 'amount-withdrawal'; typeCell.style.color = '#e57373'; }
-                row.insertCell().textContent = trx.deskripsi || '-';
-            });
-            const currentPageInfo = document.getElementById('currentPageInfo');
-            const prevPageButton = document.getElementById('prevPageButton');
-            const nextPageButton = document.getElementById('nextPageButton');
-            if(pagination && currentPageInfo) currentPageInfo.textContent = `Halaman ${pagination.page} dari ${pagination.total_pages || 1}`;
-            if(pagination && prevPageButton) prevPageButton.disabled = !pagination.has_prev_page;
-            if(pagination && nextPageButton) nextPageButton.disabled = !pagination.has_next_page;
+        
+        // --- Withdrawal Functions ---
+        function openWithdrawalModal(targetId, targetName, currentBalance) {
+            if (!currentUser) { showMessage("Anda harus login untuk melakukan penarikan.", "error"); return; }
+            document.getElementById('withdrawalTargetId').value = targetId;
+            document.getElementById('withdrawalTargetName').textContent = targetName;
+            document.getElementById('withdrawalTargetBalance').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(currentBalance)}`;
+            const amountInput = document.getElementById('withdrawalAmount');
+            amountInput.max = currentBalance;
+            amountInput.placeholder = `Maks Rp ${new Intl.NumberFormat('id-ID').format(currentBalance)}`;
+            document.getElementById('withdrawalForm').reset();
+            document.getElementById('withdrawalAmount').value = '';
+            document.getElementById('withdrawalReason').value = '';
+            openModal('withdrawalModal');
+        }
+        async function handleWithdrawalForm(event) {
+            event.preventDefault();
+            if (!currentUser) { showMessage("Sesi tidak valid. Silakan login ulang.", "error"); return; }
+            const targetId = document.getElementById('withdrawalTargetId').value;
+            const amount = document.getElementById('withdrawalAmount').value;
+            const reason = document.getElementById('withdrawalReason').value;
+            if (!targetId || !amount || parseFloat(amount) <= 0) { showMessage("Jumlah penarikan harus positif.", "error"); return; }
+            if (!reason || reason.trim() === "") { showMessage("Alasan penarikan wajib diisi.", "error"); return; }
+            const currentBalanceText = document.getElementById('withdrawalTargetBalance').textContent.replace(/[^0-9]/g, '');
+            if (parseFloat(amount) > parseFloat(currentBalanceText)) {
+                showMessage("Jumlah penarikan tidak boleh melebihi saldo tersedia.", "error"); return;
+            }
+            showMessage('Memproses permintaan penarikan Anda...', 'info', 0);
+            const payload = { target_id: parseInt(targetId), amount: parseFloat(amount), reason: reason };
+            const result = await apiCall('/transactions/withdraw', 'POST', payload);
+            // closeModal('customAlertModal'); // Tutup alert "memproses" manual
+            if (result && result.transactionDetails && result.transactionDetails.transaction_id) {
+                closeModal('customAlertModal');
+                showMessage('Penarikan berhasil! Saldo target telah diperbarui.', 'success');
+                closeModal('withdrawalModal');
+                loadTargets();
+            }
         }
 
         // --- Modal Control ---
@@ -673,27 +718,33 @@
             document.querySelectorAll('.page-section').forEach(section => section.classList.remove('active'));
             const pageToShow = document.getElementById(pageId);
             if (pageToShow) pageToShow.classList.add('active');
+            
             const navDashboard = document.getElementById('navDashboardButton');
             const navHistory = document.getElementById('navHistoryButton');
             const navLogout = document.getElementById('navLogoutButton');
             const navToRegister = document.getElementById('navToRegisterButton');
             const navToLogin = document.getElementById('navToLoginButton');
+
             if(navDashboard) navDashboard.style.backgroundColor = '#4a4a4a';
             if(navHistory) navHistory.style.backgroundColor = '#4a4a4a';
+
             if (currentAuthToken && currentUser) {
                 if(navDashboard) navDashboard.style.display = 'inline-block';
                 if(navHistory) navHistory.style.display = 'inline-block';
                 if(navLogout) navLogout.style.display = 'inline-block';
                 if(navToRegister) navToRegister.style.display = 'none';
                 if(navToLogin) navToLogin.style.display = 'none';
+                
                 const activeModal = document.querySelector('.modal.open');
                 if (!activeModal) {
                     if (pageId === 'dashboardPage') { if(navDashboard) navDashboard.style.backgroundColor = '#00bcd4'; loadTargets(); }
                     else if (pageId === 'historyPage') { if(navHistory) navHistory.style.backgroundColor = '#00bcd4'; loadTransactionHistory(1); }
                     else if (pageId !== 'loginPinPage' && pageId !== 'registerPinPage' && document.getElementById('dashboardPage')) {
-                        if (pageId !== 'dashboardPage') showPage('dashboardPage');
+                        if (pageId !== 'dashboardPage') showPage('dashboardPage'); // Default ke dashboard
                     }
                 } else if (pageId === 'historyPage' && !activeModal){ loadTransactionHistory(1); }
+
+
             } else {
                 if(navDashboard) navDashboard.style.display = 'none'; if(navHistory) navHistory.style.display = 'none'; if(navLogout) navLogout.style.display = 'none';
                 const activeModal = document.querySelector('.modal.open'); if (activeModal) closeModal(activeModal.id);
