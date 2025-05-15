@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celengan Digital Saya (Gelap + QRIS Manual + Fixes)</title>
+    <title>Celengan Digital Saya (Final - PIN, QRIS, Withdrawal, Dark)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style>
         /* Reset CSS Dasar & Tema Gelap */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -47,14 +48,16 @@
         .form-group input[type="email"],
         .form-group input[type="password"],
         .form-group input[type="number"],
-        .form-group input[type="date"] {
+        .form-group input[type="date"],
+        .form-group textarea {
             width: 100%; padding: 12px 15px;
             background-color: #3a3a3a; color: #e0e0e0;
             border: 1px solid #555; border-radius: 8px; font-size: 16px;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-family: 'Nunito Sans', sans-serif; /* Samakan font */
         }
-        .form-group input::placeholder { color: #888; }
-        .form-group input:focus { outline: none; border-color: #00acc1; box-shadow: 0 0 0 2px rgba(0, 172, 193, 0.3); }
+        .form-group input::placeholder, .form-group textarea::placeholder { color: #888; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #00acc1; box-shadow: 0 0 0 2px rgba(0, 172, 193, 0.3); }
         .form-text { text-align: center; margin-top: 20px; font-size: 14px; color: #a0a0a0; }
         .form-text a { color: #00bcd4; text-decoration: none; font-weight: 600; }
         .form-text a:hover { text-decoration: underline; }
@@ -69,10 +72,12 @@
         .btn-primary:active { background-color: #0097a7; box-shadow: 0px 2px 8px rgba(0, 188, 212, 0.25); transform: translateY(0); }
         .btn-secondary { background-color: transparent; color: #00bcd4; border: 2px solid #00bcd4; }
         .btn-secondary:hover { background-color: rgba(0, 188, 212, 0.1); color: #00acc1; border-color: #00acc1; }
-        .btn-success { background-color: #4CAF50; color: white; /* border: 2px solid #4CAF50; */ }
-        .btn-success:hover { background-color: #45a049; /* border-color: #3f8e43; */ }
-        .btn-danger { background-color: #f44336; color: white; /* border: 2px solid #f44336; */ }
-        .btn-danger:hover { background-color: #e53935; /* border-color: #d32f2f; */ }
+        .btn-success { background-color: #4CAF50; color: white; }
+        .btn-success:hover { background-color: #45a049; }
+        .btn-danger { background-color: #f44336; color: white; }
+        .btn-danger:hover { background-color: #e53935; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-warning:hover { background-color: #e0a800; }
         .btn:disabled, .btn[disabled] { background-color: #424242; color: #757575; border-color: #424242 !important; box-shadow: none; cursor: not-allowed; transform: none; }
         .btn-secondary:disabled, .btn-secondary[disabled] { background-color: transparent; color: #757575; border-color: #757575; }
 
@@ -87,8 +92,7 @@
         .progress-bar { background-color: #00bcd4; height: 100%; border-radius: 25px; width: 0%; transition: width 0.5s ease-in-out; }
         .progress-text { font-size: 12px; color: #a0a0a0; text-align: right; margin-bottom: 15px; }
         .target-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .target-actions .btn { margin-bottom: 8px; /* Spasi jika tombol wrap */ }
-
+        .target-actions .btn { margin-bottom: 8px; }
 
         /* Modal Tema Gelap */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; padding: 20px; }
@@ -187,12 +191,33 @@
         </div>
     </div>
 
+    <div id="withdrawalModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Tarik Dana dari "<span id="withdrawalTargetName">Nama Target</span>"</h2>
+            <p style="font-size: 14px; margin-bottom: 10px;">Saldo Tersedia: <strong id="withdrawalTargetBalance">Rp 0</strong></p>
+            <form id="withdrawalForm">
+                <input type="hidden" id="withdrawalTargetId">
+                <div class="form-group">
+                    <label for="withdrawalAmount">Jumlah Penarikan (Rp)</label>
+                    <input type="number" id="withdrawalAmount" name="amount" step="1000" min="1000" required placeholder="Min. Rp 1.000">
+                </div>
+                <div class="form-group">
+                    <label for="withdrawalReason">Alasan Penarikan (Wajib)</label>
+                    <textarea id="withdrawalReason" name="reason" rows="3" required placeholder="Contoh: Keperluan mendadak, beli barang X"></textarea>
+                </div>
+                <button type="submit" class="btn btn-danger btn-full-width"> <i class="fas fa-arrow-circle-down"></i> Konfirmasi Penarikan </button>
+            </form>
+        </div>
+    </div>
+
+
     <script>
         // --- Global Variables & Configuration ---
         const API_BASE_URL = 'https://celengan.up.railway.app/api'; // GANTI DENGAN URL BACKEND ANDA YANG SUDAH DI-DEPLOY!
         let currentAuthToken = localStorage.getItem('celenganAuthToken');
         let currentUser = JSON.parse(localStorage.getItem('celenganCurrentUser'));
-        let STATIC_QRIS_IMAGE_URL = ""; // Akan diisi dari API Config
+        let STATIC_QRIS_IMAGE_URL = ""; // Akan diisi dari API Config saat startup
 
         // --- Utility Functions ---
         async function apiCall(endpoint, method = 'GET', body = null, requiresAuth = true) {
@@ -237,21 +262,14 @@
 
         // --- Config Fetcher ---
         async function fetchAppConfig() {
-            // Menggunakan /api/transactions/config seperti yang dibuat di backend
-            const configData = await apiCall('/transactions/config', 'GET', null, false);
+            const configData = await apiCall('/transactions/config', 'GET', null, false); // Endpoint config
             if (configData && configData.staticQrisImageUrl) {
                 STATIC_QRIS_IMAGE_URL = configData.staticQrisImageUrl;
-                const qrisImageElement = document.getElementById('staticQrisImage');
-                if (qrisImageElement) {
-                     // Tidak langsung set src di sini, tapi saat modal QRIS ditampilkan
-                     // qrisImageElement.src = STATIC_QRIS_IMAGE_URL; 
-                }
                 console.log("Static QRIS Image URL loaded:", STATIC_QRIS_IMAGE_URL);
             } else {
                 console.error("Gagal mengambil URL QRIS statis dari server atau URL tidak valid.");
-                showMessage("Konfigurasi pembayaran QRIS tidak lengkap. Harap hubungi admin.", "error");
-                // Sembunyikan tombol bayar QRIS jika config gagal
-                document.querySelectorAll('.btn-qris-deposit').forEach(btn => btn.style.display = 'none');
+                showMessage("Konfigurasi pembayaran QRIS tidak lengkap. Fitur QRIS mungkin tidak berfungsi.", "warning");
+                // Tombol Bayar QRIS bisa disembunyikan jika config gagal, ditangani di renderTargetCard
             }
         }
 
@@ -307,7 +325,7 @@
             showPage('loginPinPage');
         }
         async function checkAuthStatus() {
-            await fetchAppConfig(); // Ambil config termasuk URL QRIS
+            await fetchAppConfig();
             const token = localStorage.getItem('celenganAuthToken');
             const user = JSON.parse(localStorage.getItem('celenganCurrentUser'));
             if (token && user) {
@@ -343,8 +361,17 @@
             const terkumpulFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(target.jumlah_terkumpul);
             const targetFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(target.jumlah_target);
             const tanggalTargetFormatted = target.tanggal_target ? new Date(target.tanggal_target).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Tidak ada';
-            card.innerHTML = `<h3>${target.nama_target}</h3> <div class="target-info">Target: <strong>${targetFormatted}</strong></div> <div class="target-info">Terkumpul: <strong>${terkumpulFormatted}</strong></div> <div class="target-info">Tanggal Target: <strong>${tanggalTargetFormatted}</strong></div> <div class="target-info">Status: <strong style="text-transform:capitalize;">${target.status}</strong></div> <div class="progress-bar-container"><div class="progress-bar" style="width: ${progress.toFixed(2)}%;"></div></div> <div class="progress-text">${progress.toFixed(1)}%</div> <div class="target-actions"> ${target.status === 'aktif' ? `<button class="btn btn-success btn-sm btn-qris-deposit"><i class="fas fa-qrcode"></i> Bayar QRIS</button>` : ''} <button class="btn btn-secondary btn-sm btn-edit"><i class="fas fa-edit"></i> Edit</button> <button class="btn btn-danger btn-sm btn-delete"><i class="fas fa-trash"></i> Hapus</button> </div>`;
+            
+            let qrisButtonHtml = '';
+            if (target.status === 'aktif' && STATIC_QRIS_IMAGE_URL && STATIC_QRIS_IMAGE_URL !== "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI") {
+                qrisButtonHtml = `<button class="btn btn-success btn-sm btn-qris-deposit"><i class="fas fa-qrcode"></i> Bayar QRIS</button>`;
+            }
+            const withdrawButtonHtml = parseFloat(target.jumlah_terkumpul) > 0 ? `<button class="btn btn-warning btn-sm btn-withdraw"><i class="fas fa-hand-holding-usd"></i> Tarik Dana</button>` : '';
+
+            card.innerHTML = `<h3>${target.nama_target}</h3> <div class="target-info">Target: <strong>${targetFormatted}</strong></div> <div class="target-info">Terkumpul: <strong>${terkumpulFormatted}</strong></div> <div class="target-info">Tanggal Target: <strong>${tanggalTargetFormatted}</strong></div> <div class="target-info">Status: <strong style="text-transform:capitalize;">${target.status}</strong></div> <div class="progress-bar-container"><div class="progress-bar" style="width: ${progress.toFixed(2)}%;"></div></div> <div class="progress-text">${progress.toFixed(1)}%</div> <div class="target-actions"> ${qrisButtonHtml} ${withdrawButtonHtml} <button class="btn btn-secondary btn-sm btn-edit"><i class="fas fa-edit"></i> Edit</button> <button class="btn btn-danger btn-sm btn-delete"><i class="fas fa-trash"></i> Hapus</button> </div>`;
+            
             const qrisDepositButton = card.querySelector('.btn-qris-deposit'); if (qrisDepositButton) { qrisDepositButton.addEventListener('click', () => openQrisAmountModal(target.id, target.nama_target)); }
+            const withdrawButton = card.querySelector('.btn-withdraw'); if (withdrawButton) { withdrawButton.addEventListener('click', () => openWithdrawalModal(target.id, target.nama_target, target.jumlah_terkumpul)); }
             card.querySelector('.btn-edit').addEventListener('click', () => openEditTargetModal(target.id));
             card.querySelector('.btn-delete').addEventListener('click', () => handleDeleteTarget(target.id, target.nama_target));
             return card;
@@ -358,7 +385,7 @@
             if (!nama_target || !jumlah_target || parseFloat(jumlah_target) <= 0) { showMessage('Nama target dan jumlah target (positif) harus diisi.', 'error'); return; }
             const payload = { nama_target, jumlah_target: parseFloat(jumlah_target), tanggal_target };
             let result;
-            console.log(targetId ? `Mode Edit, ID: ${targetId}` : "Mode Buat Baru"); // Debug
+            console.log(targetId ? `Mode Edit, ID: ${targetId}` : "Mode Buat Baru");
             if (targetId) { result = await apiCall(`/targets/${targetId}`, 'PUT', payload); }
             else { result = await apiCall('/targets', 'POST', payload); }
             if (result && (result.id || result.nama_target || (result.message && result.message.toLowerCase().includes('berhasil')) || (result.message && result.message.toLowerCase().includes('updated')))) {
@@ -370,7 +397,7 @@
             if (!currentUser) { showMessage("Anda harus login.", "error"); return; }
             const target = await apiCall(`/targets/${targetIdToEdit}`, 'GET');
             if (target && target.id) {
-                document.getElementById('targetForm').reset(); // Reset form sebelum diisi
+                document.getElementById('targetForm').reset();
                 document.getElementById('modalTitle').textContent = 'Edit Target Tabungan';
                 document.getElementById('targetId').value = target.id;
                 document.getElementById('namaTarget').value = target.nama_target;
@@ -427,21 +454,55 @@
                 loadTargets();
             }
         }
+        
+        // --- Withdrawal Functions ---
+        function openWithdrawalModal(targetId, targetName, currentBalance) {
+            if (!currentUser) { showMessage("Anda harus login untuk melakukan penarikan.", "error"); return; }
+            document.getElementById('withdrawalTargetId').value = targetId;
+            document.getElementById('withdrawalTargetName').textContent = targetName;
+            document.getElementById('withdrawalTargetBalance').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(currentBalance)}`;
+            const amountInput = document.getElementById('withdrawalAmount');
+            amountInput.max = currentBalance;
+            amountInput.placeholder = `Maks Rp ${new Intl.NumberFormat('id-ID').format(currentBalance)}`;
+            document.getElementById('withdrawalForm').reset(); // Reset field lain tapi bukan yang baru di-set
+            document.getElementById('withdrawalAmount').value = '';
+            document.getElementById('withdrawalReason').value = '';
+            openModal('withdrawalModal');
+        }
+        async function handleWithdrawalForm(event) {
+            event.preventDefault();
+            if (!currentUser) { showMessage("Sesi tidak valid. Silakan login ulang.", "error"); return; }
+            const targetId = document.getElementById('withdrawalTargetId').value;
+            const amount = document.getElementById('withdrawalAmount').value;
+            const reason = document.getElementById('withdrawalReason').value;
+            if (!targetId || !amount || parseFloat(amount) <= 0) { showMessage("Jumlah penarikan harus positif.", "error"); return; }
+            if (!reason || reason.trim() === "") { showMessage("Alasan penarikan wajib diisi.", "error"); return; }
+            // Validasi sederhana agar tidak menarik lebih dari saldo (backend juga validasi)
+            const currentBalanceText = document.getElementById('withdrawalTargetBalance').textContent.replace(/[^0-9]/g, '');
+            if (parseFloat(amount) > parseFloat(currentBalanceText)) {
+                showMessage("Jumlah penarikan tidak boleh melebihi saldo tersedia.", "error"); return;
+            }
+            showMessage('Memproses permintaan penarikan Anda...', 'info');
+            const payload = { target_id: parseInt(targetId), amount: parseFloat(amount), reason: reason };
+            const result = await apiCall('/transactions/withdraw', 'POST', payload);
+            if (result && result.transactionDetails && result.transactionDetails.transaction_id) {
+                showMessage('Penarikan berhasil! Saldo target telah diperbarui.', 'success');
+                closeModal('withdrawalModal');
+                loadTargets();
+            }
+        }
 
         // --- Modal Control ---
-        function openModal(modalId) { // Disederhanakan
+        function openModal(modalId) {
             const modal = document.getElementById(modalId);
             if(modal) modal.style.display = 'flex';
         }
-        function closeModal(modalId) { // Disederhanakan, reset form lebih eksplisit di trigger
+        function closeModal(modalId) {
             const modal = document.getElementById(modalId);
             if(modal) modal.style.display = 'none';
             const form = modal ? modal.querySelector('form') : null;
-            if (form) { form.reset(); } // Umumnya reset form saat ditutup
-            if (modalId === 'createTargetModal') { // Pastikan ID dan judul spesifik direset untuk create
-                document.getElementById('targetId').value = '';
-                document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
-            }
+            if (form) { form.reset(); }
+            if (modalId === 'createTargetModal') { document.getElementById('targetId').value = ''; document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';}
         }
 
         // --- Page Navigation ---
@@ -477,6 +538,8 @@
             const targetForm = document.getElementById('targetForm'); if(targetForm) targetForm.addEventListener('submit', handleTargetForm);
             const qrisAmountForm = document.getElementById('qrisAmountForm'); if(qrisAmountForm) qrisAmountForm.addEventListener('submit', handleQrisAmountForm);
             const btnConfirmQrisPaid = document.getElementById('btnConfirmQrisPaid'); if(btnConfirmQrisPaid) btnConfirmQrisPaid.addEventListener('click', handleQrisUserConfirmation);
+            const withdrawalForm = document.getElementById('withdrawalForm'); if (withdrawalForm) withdrawalForm.addEventListener('submit', handleWithdrawalForm);
+
             document.querySelectorAll('.modal .close-button').forEach(button => button.addEventListener('click', () => closeModal(button.closest('.modal').id)));
             window.addEventListener('click', (event) => { document.querySelectorAll('.modal').forEach(modal => { if (event.target == modal) closeModal(modal.id); }); });
             const navLogoutButton = document.getElementById('navLogoutButton'); if(navLogoutButton) navLogoutButton.addEventListener('click', () => handleLogout());
@@ -488,9 +551,9 @@
             if(btnOpenCreateTargetModal) {
                 btnOpenCreateTargetModal.addEventListener('click', () => {
                     if (!currentAuthToken || !currentUser) { showMessage("Anda harus login untuk membuat target.", "error"); showPage('loginPinPage'); return; }
-                    document.getElementById('targetForm').reset(); // Reset form untuk "Buat Baru"
-                    document.getElementById('targetId').value = '';   // Kosongkan ID untuk "Buat Baru"
-                    document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru'; // Set judul
+                    document.getElementById('targetForm').reset();
+                    document.getElementById('targetId').value = '';
+                    document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
                     openModal('createTargetModal');
                 });
             }
@@ -499,7 +562,7 @@
         // Panggil saat DOM sudah siap
         document.addEventListener('DOMContentLoaded', () => {
             setupEventListeners();
-            checkAuthStatus(); // Ini akan memanggil fetchAppConfig dan menentukan halaman awal
+            checkAuthStatus(); 
         });
 
     </script>
