@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celengan Digital Saya (Final Lengkap)</title>
+    <title>Celengan Digital Saya (Super Lengkap)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
     <style>
         /* Reset CSS Dasar & Tema Gelap */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -17,19 +16,16 @@
             background-color: #1a1a1a; /* Latar belakang gelap utama */
             color: #e0e0e0;       /* Teks terang utama */
             line-height: 1.6;
-            /* display: flex; dihapus agar konten bisa scroll jika lebih panjang dari viewport */
-            /* justify-content: center; */
-            /* align-items: center; */
-            min-height: 100vh;
-            padding: 20px;
             padding-top: 80px; /* Ruang untuk nav fixed jika ada */
+            padding-bottom: 20px;
         }
 
         .page-container { /* Wrapper untuk konten halaman agar bisa di-center jika pendek */
             display: flex;
-            flex-direction: column; /* Agar konten bisa di atas dan pagination di bawah */
+            flex-direction: column;
             align-items: center; /* Pusatkan konten utama */
             width: 100%;
+            min-height: calc(100vh - 100px); /* Tinggi viewport dikurangi padding atas & bawah body */
         }
 
         .auth-container, .dashboard-container, .history-container, .modal-content {
@@ -40,7 +36,7 @@
             width: 100%;
             border: 1px solid #444; /* Border subtil */
         }
-        .auth-container { max-width: 450px; margin-top: 20px; }
+        .auth-container { max-width: 450px; margin-top: 20px; margin-bottom: 20px; }
         .dashboard-container, .history-container { max-width: 900px; margin: 20px auto; }
 
 
@@ -76,19 +72,15 @@
         .btn-sm { padding: 8px 16px; font-size: 14px; width: auto; }
         .btn i { margin-right: 8px; }
         .btn-primary { background-color: #00bcd4; color: #111; box-shadow: 0px 4px 12px rgba(0, 188, 212, 0.3); }
-        .btn-primary:hover { background-color: #00acc1; box-shadow: 0px 6px 15px rgba(0, 188, 212, 0.4); transform: translateY(-1px); }
-        .btn-primary:active { background-color: #0097a7; box-shadow: 0px 2px 8px rgba(0, 188, 212, 0.25); transform: translateY(0); }
+        .btn-primary:hover { background-color: #00acc1; transform: translateY(-1px); }
+        .btn-primary:active { background-color: #0097a7; transform: translateY(0); }
         .btn-secondary { background-color: transparent; color: #00bcd4; border: 2px solid #00bcd4; }
         .btn-secondary:hover { background-color: rgba(0, 188, 212, 0.1); color: #00acc1; border-color: #00acc1; }
-        .btn-success { background-color: #4CAF50; color: white; }
-        .btn-success:hover { background-color: #45a049; }
-        .btn-danger { background-color: #f44336; color: white; }
-        .btn-danger:hover { background-color: #e53935; }
-        .btn-warning { background-color: #ffc107; color: #212529; } /* Tombol Tarik Dana */
-        .btn-warning:hover { background-color: #e0a800; }
+        .btn-success { background-color: #4CAF50; color: white; } .btn-success:hover { background-color: #45a049; }
+        .btn-danger { background-color: #f44336; color: white; } .btn-danger:hover { background-color: #e53935; }
+        .btn-warning { background-color: #ffc107; color: #212529; } .btn-warning:hover { background-color: #e0a800; }
         .btn:disabled, .btn[disabled] { background-color: #424242 !important; color: #757575 !important; border-color: #424242 !important; box-shadow: none !important; cursor: not-allowed !important; transform: none !important; }
         .btn-secondary:disabled, .btn-secondary[disabled] { background-color: transparent !important; color: #757575 !important; border-color: #757575 !important; }
-
 
         /* Dashboard & History */
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
@@ -100,22 +92,28 @@
         .progress-bar-container { width: 100%; background-color: #555; border-radius: 25px; height: 12px; margin-top: 10px; margin-bottom: 5px; overflow: hidden; }
         .progress-bar { background-color: #00bcd4; height: 100%; border-radius: 25px; width: 0%; transition: width 0.5s ease-in-out; }
         .progress-text { font-size: 12px; color: #a0a0a0; text-align: right; margin-bottom: 15px; }
-        .target-actions { margin-top: auto; /* Dorong tombol ke bawah kartu */ display: flex; gap: 10px; flex-wrap: wrap; padding-top: 15px; /* Beri jarak dari konten di atasnya */ }
-        .target-actions .btn { margin-bottom: 8px; flex-grow: 1; /* Tombol bisa membesar jika ada ruang */ }
-        .target-actions .btn-edit, .target-actions .btn-delete { flex-grow: 0; /* Edit dan delete tidak perlu membesar */ }
+        
+        .target-actions {
+            margin-top: auto; /* Dorong tombol ke bawah kartu */
+            padding-top: 15px; /* Beri jarak dari konten di atasnya */
+            display: flex;
+            flex-wrap: wrap; 
+            gap: 10px; /* Jarak konsisten antar tombol */
+        }
+        /* Tidak perlu margin individual pada .target-actions .btn jika gap sudah efektif */
 
 
         /* Riwayat Transaksi */
-        .transaction-table-container { overflow-x: auto; /* Agar tabel bisa di-scroll horizontal di layar kecil */ }
+        .transaction-table-container { overflow-x: auto; }
         .transaction-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .transaction-table th, .transaction-table td { padding: 10px 12px; border: 1px solid #444; text-align: left; font-size: 14px; white-space: nowrap; /* Hindari teks wrap di sel tabel */ }
+        .transaction-table th, .transaction-table td { padding: 10px 12px; border: 1px solid #444; text-align: left; font-size: 14px; white-space: nowrap; }
         .transaction-table th { background-color: #3a3a3a; color: #00bcd4; font-weight: 700; }
         .transaction-table tr:nth-child(even) { background-color: #333333; }
-        .transaction-table .amount-deposit { color: #4CAF50; font-weight: bold; }
-        .transaction-table .amount-withdrawal { color: #f44336; font-weight: bold; }
-        .transaction-table td:nth-child(5) { /* Kolom deskripsi */ white-space: normal; min-width: 200px; } /* Izinkan deskripsi wrap */
+        .transaction-table .amount-deposit { color: #81c784; font-weight: bold; }
+        .transaction-table .amount-withdrawal { color: #e57373; font-weight: bold; }
+        .transaction-table td:nth-child(5) { white-space: normal; min-width: 200px; }
         .pagination-controls { margin-top: 20px; text-align: center; display: flex; justify-content: center; align-items: center; gap: 10px;}
-
+        #loadingHistoryText, #noHistoryText { text-align: center; margin-top: 20px; color: #aaa;}
 
         /* Modal & Animasi */
         .modal { display: flex; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; padding: 20px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; }
@@ -126,11 +124,21 @@
         .close-button { color: #777; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 15px; right: 20px; }
         .close-button:hover, .close-button:focus { color: #ccc; text-decoration: none; cursor: pointer; }
 
-        /* QRIS Modal Specific Tema Gelap */
+        /* QRIS Modal */
         #staticQrisImage { max-width: 250px; max-height: 250px; margin: 15px auto; display: block; border: 1px solid #555; padding: 5px; background-color: white; }
         #qrisPaymentModal p { color: #b0b0b0; } #qrisPaymentModal strong { color: #e0e0e0; }
 
-        /* Navigasi Tema Gelap */
+        /* Custom Alert Modal Styling */
+        #customAlertModal .modal-content { max-width: 400px; padding: 25px; }
+        #customAlertModal h3 { margin-top: 0; font-size: 20px; display: flex; align-items: center; } /* Mengatur judul dan ikon sejajar */
+        #customAlertIcon { margin-right: 10px; font-size: 24px; }
+        #customAlertModal .modal-content.alert-modal-success #customAlertTitle { color: #4CAF50; } /* Warna judul diubah di sini */
+        #customAlertModal .modal-content.alert-modal-error #customAlertTitle { color: #f44336; }
+        #customAlertModal .modal-content.alert-modal-info #customAlertTitle { color: #00bcd4; }
+        #customAlertMessage { margin-top: 15px; margin-bottom: 25px; font-size: 16px; color: #c0c0c0; text-align: center; }
+        #customAlertOkButton { width: auto; padding: 10px 30px; display: block; margin: 0 auto; }
+
+        /* Navigasi */
         .simple-nav { position: fixed; top: 0; left: 0; width: 100%; background: #2c2c2c; padding: 10px 20px; border-bottom: 1px solid #444; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 1001; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
         .simple-nav button { background: #4a4a4a; color: #e0e0e0; border: 1px solid #555; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background-color 0.2s ease; }
         .simple-nav button:hover { background: #5a5a5a; }
@@ -226,12 +234,20 @@
     <div id="withdrawalModal" class="modal">
         <div class="modal-content"> <span class="close-button">&times;</span> <h2>Tarik Dana dari "<span id="withdrawalTargetName">Nama Target</span>"</h2> <p style="font-size: 14px; margin-bottom: 10px;">Saldo Tersedia: <strong id="withdrawalTargetBalance">Rp 0</strong></p> <form id="withdrawalForm"> <input type="hidden" id="withdrawalTargetId"> <div class="form-group"> <label for="withdrawalAmount">Jumlah Penarikan (Rp)</label> <input type="number" id="withdrawalAmount" name="amount" step="1000" min="1000" required placeholder="Min. Rp 1.000"> </div> <div class="form-group"> <label for="withdrawalReason">Alasan Penarikan (Wajib)</label> <textarea id="withdrawalReason" name="reason" rows="3" required placeholder="Contoh: Keperluan mendadak, beli barang X"></textarea> </div> <button type="submit" class="btn btn-danger btn-full-width"> <i class="fas fa-arrow-circle-down"></i> Konfirmasi Penarikan </button> </form> </div>
     </div>
+    
+    <div id="customAlertModal" class="modal">
+        <div class="modal-content"> <h3 id="customAlertTitle"><i id="customAlertIcon" class="fas"></i> <span style="margin-left: 8px;">Judul Alert</span></h3>
+            <p id="customAlertMessage">Isi pesan alert di sini.</p>
+            <button id="customAlertOkButton" class="btn btn-primary">OK</button>
+        </div>
+    </div>
+
 </div> <script>
         // --- Global Variables & Configuration ---
         const API_BASE_URL = 'https://celengan.up.railway.app/api'; // GANTI DENGAN URL BACKEND ANDA YANG SUDAH DI-DEPLOY!
         let currentAuthToken = localStorage.getItem('celenganAuthToken');
         let currentUser = JSON.parse(localStorage.getItem('celenganCurrentUser'));
-        let STATIC_QRIS_IMAGE_URL = "";
+        let STATIC_QRIS_IMAGE_URL = ""; // Akan diisi dari API Config saat startup
         let currentTransactionPage = 1;
         const transactionsPerPage = 10;
 
@@ -274,7 +290,33 @@
                 return null;
             }
         }
-        function showMessage(message, type = 'info') { alert(`[${type.toUpperCase()}] ${message}`); console.log(`Message: [${type.toUpperCase()}] ${message}`); }
+        
+        function showMessage(message, type = 'info') {
+            const alertModal = document.getElementById('customAlertModal');
+            const alertTitleSpan = alertModal.querySelector('#customAlertTitle span');
+            const alertIconEl = document.getElementById('customAlertIcon');
+            const alertMessageEl = document.getElementById('customAlertMessage');
+            const modalContent = alertModal.querySelector('.modal-content');
+            
+            modalContent.classList.remove('alert-modal-success', 'alert-modal-error', 'alert-modal-info');
+
+            if (type === 'success') {
+                alertTitleSpan.textContent = 'Sukses!';
+                if(alertIconEl) alertIconEl.className = 'fas fa-check-circle';
+                modalContent.classList.add('alert-modal-success');
+            } else if (type === 'error') {
+                alertTitleSpan.textContent = 'Error!';
+                if(alertIconEl) alertIconEl.className = 'fas fa-exclamation-triangle';
+                modalContent.classList.add('alert-modal-error');
+            } else { // info atau default
+                alertTitleSpan.textContent = 'Informasi';
+                if(alertIconEl) alertIconEl.className = 'fas fa-info-circle';
+                modalContent.classList.add('alert-modal-info');
+            }
+            alertMessageEl.textContent = message;
+            console.log(`CustomAlert [${type.toUpperCase()}]: ${message}`);
+            openModal('customAlertModal');
+        }
 
         // --- Config Fetcher ---
         async function fetchAppConfig() {
@@ -283,9 +325,9 @@
                 STATIC_QRIS_IMAGE_URL = configData.staticQrisImageUrl;
                 console.log("Static QRIS Image URL loaded:", STATIC_QRIS_IMAGE_URL);
             } else {
-                console.error("Gagal mengambil URL QRIS statis dari server atau URL tidak valid.");
-                showMessage("Konfigurasi pembayaran QRIS tidak lengkap. Fitur QRIS mungkin tidak berfungsi.", "warning");
-                document.querySelectorAll('.btn-qris-deposit').forEach(btn => btn.style.display = 'none');
+                console.error("Gagal mengambil URL QRIS statis dari server atau URL tidak valid. Pesan dari server:", configData ? configData.warning || "Tidak ada URL." : "Tidak ada respons config.");
+                // Jangan panggil showMessage di sini karena bisa loop jika API_BASE_URL salah saat startup
+                // Penanganan tombol QRIS akan dilakukan di renderTargetCard
             }
         }
 
@@ -341,7 +383,7 @@
             showPage('loginPinPage');
         }
         async function checkAuthStatus() {
-            await fetchAppConfig();
+            await fetchAppConfig(); // Ambil config dulu
             const token = localStorage.getItem('celenganAuthToken');
             const user = JSON.parse(localStorage.getItem('celenganCurrentUser'));
             if (token && user) {
@@ -421,7 +463,7 @@
         }
         async function handleDeleteTarget(targetId, targetName) {
             if (!currentUser) { showMessage("Anda harus login.", "error"); return; }
-            if (confirm(`Apakah Anda yakin ingin menghapus target "${targetName}"?`)) {
+            if (confirm(`Apakah Anda yakin ingin menghapus target "${targetName}"?`)) { // Menggunakan confirm() bawaan browser
                 const result = await apiCall(`/targets/${targetId}`, 'DELETE');
                 if (result && result.message === 'Target removed') { showMessage('Target berhasil dihapus.', 'success'); loadTargets(); }
             }
@@ -461,9 +503,10 @@
             const targetId = document.getElementById('qrisConfirmTargetId').value;
             const amount = document.getElementById('qrisConfirmAmount').value;
             if (!targetId || !amount) { showMessage("Informasi target atau jumlah tidak ditemukan.", "error"); return; }
-            showMessage('Memproses konfirmasi pembayaran Anda...', 'info');
+            showMessage('Memproses konfirmasi pembayaran Anda...', 'info', true); // true untuk tidak auto-close alert
             const payload = { target_id: parseInt(targetId), amount: parseFloat(amount) };
             const result = await apiCall('/transactions/qris/confirm-payment', 'POST', payload);
+            closeModal('customAlertModal'); // Tutup alert "memproses"
             if (result && result.transactionDetails && result.transactionDetails.transaction_id) {
                 showMessage('Konfirmasi pembayaran berhasil! Saldo target telah diperbarui.', 'success');
                 closeModal('qrisPaymentModal');
@@ -497,9 +540,10 @@
             if (parseFloat(amount) > parseFloat(currentBalanceText)) {
                 showMessage("Jumlah penarikan tidak boleh melebihi saldo tersedia.", "error"); return;
             }
-            showMessage('Memproses permintaan penarikan Anda...', 'info');
+            showMessage('Memproses permintaan penarikan Anda...', 'info', true); // true untuk tidak auto-close alert
             const payload = { target_id: parseInt(targetId), amount: parseFloat(amount), reason: reason };
             const result = await apiCall('/transactions/withdraw', 'POST', payload);
+            closeModal('customAlertModal'); // Tutup alert "memproses"
             if (result && result.transactionDetails && result.transactionDetails.transaction_id) {
                 showMessage('Penarikan berhasil! Saldo target telah diperbarui.', 'success');
                 closeModal('withdrawalModal');
@@ -515,6 +559,7 @@
                     document.getElementById('targetForm').reset();
                     document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
                 }
+                // Jangan reset form qrisAmountModal atau withdrawalModal di sini, karena sudah dihandle di open...Modal masing-masing
                 modal.style.display = 'flex';
                 setTimeout(() => { modal.classList.add('open'); }, 10);
             }
@@ -523,10 +568,12 @@
             const modal = document.getElementById(modalId);
             if (modal) {
                 modal.classList.remove('open');
-                // Kita bisa delay display none agar animasi selesai, atau biarkan CSS visibility yang handle
-                // Untuk saat ini, CSS visibility yang di-delay sudah cukup
-                const form = modal.querySelector('form');
-                if (form) { form.reset(); }
+                // Untuk modal selain customAlert, reset formnya.
+                // Custom alert tidak punya form standar.
+                if (modalId !== 'customAlertModal') {
+                    const form = modal.querySelector('form');
+                    if (form) { form.reset(); }
+                }
                 if (modalId === 'createTargetModal') {
                     document.getElementById('targetId').value = '';
                     document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
@@ -546,9 +593,8 @@
             const navToRegister = document.getElementById('navToRegisterButton');
             const navToLogin = document.getElementById('navToLoginButton');
 
-            // Reset aksen tombol navigasi
-            if(navDashboard) navDashboard.style.backgroundColor = '#4a4a4a';
-            if(navHistory) navHistory.style.backgroundColor = '#4a4a4a';
+            if(navDashboard) navDashboard.style.backgroundColor = '#4a4a4a'; // Reset aksen
+            if(navHistory) navHistory.style.backgroundColor = '#4a4a4a';   // Reset aksen
 
             if (currentAuthToken && currentUser) {
                 if(navDashboard) navDashboard.style.display = 'inline-block';
@@ -560,15 +606,19 @@
                 const activeModal = document.querySelector('.modal.open');
                 if (!activeModal) {
                     if (pageId === 'dashboardPage' && navDashboard) navDashboard.style.backgroundColor = '#00bcd4';
-                    else if (pageId === 'historyPage' && navHistory) navHistory.style.backgroundColor = '#00bcd4';
-                    else if (pageId !== 'loginPinPage' && pageId !== 'registerPinPage' && document.getElementById('dashboardPage')) {
-                        showPage('dashboardPage'); // Default ke dashboard jika sudah login & tidak ada modal aktif
+                    else if (pageId === 'historyPage' && navHistory) {
+                        navHistory.style.backgroundColor = '#00bcd4';
+                        loadTransactionHistory(1); // Muat riwayat saat halaman dibuka
+                    } else if (pageId !== 'loginPinPage' && pageId !== 'registerPinPage' && document.getElementById('dashboardPage')) {
+                        if (pageId !== 'dashboardPage') showPage('dashboardPage'); // Default ke dashboard
+                        if(navDashboard) navDashboard.style.backgroundColor = '#00bcd4'; // Pastikan dashboard aktif jika default
                     }
+                } else if (pageId === 'historyPage' && !activeModal) { // Jika ke history page dan tidak ada modal
+                     loadTransactionHistory(1);
                 }
-                if (pageId === 'historyPage' && !activeModal) loadTransactionHistory(1);
 
 
-            } else {
+            } else { // Logged out
                 if(navDashboard) navDashboard.style.display = 'none';
                 if(navHistory) navHistory.style.display = 'none';
                 if(navLogout) navLogout.style.display = 'none';
@@ -582,34 +632,38 @@
 
         // --- Event Listeners Setup ---
         function setupEventListeners() {
+            // Forms
             const loginForm = document.getElementById('loginPinForm'); if(loginForm) loginForm.addEventListener('submit', handlePinLogin);
             const registerForm = document.getElementById('registerPinForm'); if(registerForm) registerForm.addEventListener('submit', handlePinRegister);
             const targetForm = document.getElementById('targetForm'); if(targetForm) targetForm.addEventListener('submit', handleTargetForm);
             const qrisAmountForm = document.getElementById('qrisAmountForm'); if(qrisAmountForm) qrisAmountForm.addEventListener('submit', handleQrisAmountForm);
             const btnConfirmQrisPaid = document.getElementById('btnConfirmQrisPaid'); if(btnConfirmQrisPaid) btnConfirmQrisPaid.addEventListener('click', handleQrisUserConfirmation);
             const withdrawalForm = document.getElementById('withdrawalForm'); if (withdrawalForm) withdrawalForm.addEventListener('submit', handleWithdrawalForm);
+            const customAlertOkButton = document.getElementById('customAlertOkButton'); if(customAlertOkButton) customAlertOkButton.addEventListener('click', () => closeModal('customAlertModal'));
 
+            // Modal Close Buttons
             document.querySelectorAll('.modal .close-button').forEach(button => button.addEventListener('click', () => closeModal(button.closest('.modal').id)));
+            // Close modal on outside click
             window.addEventListener('click', (event) => { document.querySelectorAll('.modal').forEach(modal => { if (event.target == modal) closeModal(modal.id); }); });
             
+            // Navigation Links/Buttons
             const navLogoutButton = document.getElementById('navLogoutButton'); if(navLogoutButton) navLogoutButton.addEventListener('click', () => handleLogout());
             const linkToRegister = document.getElementById('linkToRegisterPage'); if(linkToRegister) linkToRegister.addEventListener('click', (e) => { e.preventDefault(); showPage('registerPinPage'); });
             const linkToLogin = document.getElementById('linkToLoginPage'); if(linkToLogin) linkToLogin.addEventListener('click', (e) => { e.preventDefault(); showPage('loginPinPage'); });
             const navToRegisterButton = document.getElementById('navToRegisterButton'); if(navToRegisterButton) navToRegisterButton.addEventListener('click', () => showPage('registerPinPage'));
             const navToLoginButton = document.getElementById('navToLoginButton'); if(navToLoginButton) navToLoginButton.addEventListener('click', () => showPage('loginPinPage'));
-            
             const navDashboardButton = document.getElementById('navDashboardButton'); if(navDashboardButton) navDashboardButton.addEventListener('click', () => showPage('dashboardPage'));
             const navHistoryButton = document.getElementById('navHistoryButton'); if(navHistoryButton) navHistoryButton.addEventListener('click', () => showPage('historyPage'));
 
+            // Pagination Buttons for History
             const prevPageBtn = document.getElementById('prevPageButton'); if(prevPageBtn) prevPageBtn.addEventListener('click', () => { if (currentTransactionPage > 1) loadTransactionHistory(currentTransactionPage - 1); });
-            const nextPageBtn = document.getElementById('nextPageButton'); if(nextPageBtn) nextPageBtn.addEventListener('click', () => { loadTransactionHistory(currentTransactionPage + 1); });
+            const nextPageBtn = document.getElementById('nextPageButton'); if(nextPageBtn) nextPageBtn.addEventListener('click', () => { loadTransactionHistory(currentTransactionPage + 1); }); // Validasi batas atas dilakukan oleh disabled state tombol
 
-
+            // Open Create Target Modal Button
             const btnOpenCreateTargetModal = document.getElementById('btnOpenCreateTargetModal');
             if(btnOpenCreateTargetModal) {
                 btnOpenCreateTargetModal.addEventListener('click', () => {
                     if (!currentAuthToken || !currentUser) { showMessage("Anda harus login untuk membuat target.", "error"); showPage('loginPinPage'); return; }
-                    // Persiapan modal untuk "Buat Baru" secara eksplisit
                     document.getElementById('targetForm').reset();
                     document.getElementById('targetId').value = '';
                     document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
