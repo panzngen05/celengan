@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celengan Digital Saya (Final - PIN, QRIS, Withdrawal, Dark)</title>
+    <title>Celengan Digital Saya (Final Lengkap)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -17,15 +17,22 @@
             background-color: #1a1a1a; /* Latar belakang gelap utama */
             color: #e0e0e0;       /* Teks terang utama */
             line-height: 1.6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            /* display: flex; dihapus agar konten bisa scroll jika lebih panjang dari viewport */
+            /* justify-content: center; */
+            /* align-items: center; */
             min-height: 100vh;
             padding: 20px;
             padding-top: 80px; /* Ruang untuk nav fixed jika ada */
         }
 
-        .auth-container, .dashboard-container, .modal-content {
+        .page-container { /* Wrapper untuk konten halaman agar bisa di-center jika pendek */
+            display: flex;
+            flex-direction: column; /* Agar konten bisa di atas dan pagination di bawah */
+            align-items: center; /* Pusatkan konten utama */
+            width: 100%;
+        }
+
+        .auth-container, .dashboard-container, .history-container, .modal-content {
             background-color: #2c2c2c; /* Latar belakang kontainer lebih terang dari body */
             padding: 30px 40px;
             border-radius: 12px;
@@ -33,10 +40,11 @@
             width: 100%;
             border: 1px solid #444; /* Border subtil */
         }
-        .auth-container { max-width: 450px; }
-        .dashboard-container { max-width: 900px; margin: 0 auto; }
+        .auth-container { max-width: 450px; margin-top: 20px; }
+        .dashboard-container, .history-container { max-width: 900px; margin: 20px auto; }
 
-        h1, h2, h3 { color: #ffffff; margin-bottom: 20px; } /* Teks heading putih */
+
+        h1, h2, h3 { color: #ffffff; margin-bottom: 20px; }
         h1 { font-size: 28px; font-weight: 800; text-align: center; }
         h2 { font-size: 24px; font-weight: 700; }
         .target-card h3 { font-size: 18px; font-weight: 700; text-align: left; color: #f5f5f5; }
@@ -54,7 +62,7 @@
             background-color: #3a3a3a; color: #e0e0e0;
             border: 1px solid #555; border-radius: 8px; font-size: 16px;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            font-family: 'Nunito Sans', sans-serif; /* Samakan font */
+            font-family: 'Nunito Sans', sans-serif;
         }
         .form-group input::placeholder, .form-group textarea::placeholder { color: #888; }
         .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #00acc1; box-shadow: 0 0 0 2px rgba(0, 172, 193, 0.3); }
@@ -76,26 +84,44 @@
         .btn-success:hover { background-color: #45a049; }
         .btn-danger { background-color: #f44336; color: white; }
         .btn-danger:hover { background-color: #e53935; }
-        .btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-warning { background-color: #ffc107; color: #212529; } /* Tombol Tarik Dana */
         .btn-warning:hover { background-color: #e0a800; }
-        .btn:disabled, .btn[disabled] { background-color: #424242; color: #757575; border-color: #424242 !important; box-shadow: none; cursor: not-allowed; transform: none; }
-        .btn-secondary:disabled, .btn-secondary[disabled] { background-color: transparent; color: #757575; border-color: #757575; }
+        .btn:disabled, .btn[disabled] { background-color: #424242 !important; color: #757575 !important; border-color: #424242 !important; box-shadow: none !important; cursor: not-allowed !important; transform: none !important; }
+        .btn-secondary:disabled, .btn-secondary[disabled] { background-color: transparent !important; color: #757575 !important; border-color: #757575 !important; }
 
-        /* Dashboard Tema Gelap */
-        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
-        .dashboard-header h2 { text-align: left; margin-bottom: 5px; color: #f5f5f5;}
+
+        /* Dashboard & History */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
+        .page-header h2 { text-align: left; margin-bottom: 5px; color: #f5f5f5;}
         #dashboardUserGreeting { font-size: 16px; font-weight: normal; color: #b0b0b0; width: 100%; margin-bottom: 15px; }
         .target-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .target-card { background-color: #3a3a3a; padding: 20px; border-radius: 10px; border: 1px solid #555; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .target-card { background-color: #3a3a3a; padding: 20px; border-radius: 10px; border: 1px solid #555; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
         .target-info { font-size: 14px; color: #b0b0b0; margin-bottom: 8px; } .target-info strong { color: #e0e0e0; }
         .progress-bar-container { width: 100%; background-color: #555; border-radius: 25px; height: 12px; margin-top: 10px; margin-bottom: 5px; overflow: hidden; }
         .progress-bar { background-color: #00bcd4; height: 100%; border-radius: 25px; width: 0%; transition: width 0.5s ease-in-out; }
         .progress-text { font-size: 12px; color: #a0a0a0; text-align: right; margin-bottom: 15px; }
-        .target-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .target-actions .btn { margin-bottom: 8px; }
+        .target-actions { margin-top: auto; /* Dorong tombol ke bawah kartu */ display: flex; gap: 10px; flex-wrap: wrap; padding-top: 15px; /* Beri jarak dari konten di atasnya */ }
+        .target-actions .btn { margin-bottom: 8px; flex-grow: 1; /* Tombol bisa membesar jika ada ruang */ }
+        .target-actions .btn-edit, .target-actions .btn-delete { flex-grow: 0; /* Edit dan delete tidak perlu membesar */ }
 
-        /* Modal Tema Gelap */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; padding: 20px; }
+
+        /* Riwayat Transaksi */
+        .transaction-table-container { overflow-x: auto; /* Agar tabel bisa di-scroll horizontal di layar kecil */ }
+        .transaction-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .transaction-table th, .transaction-table td { padding: 10px 12px; border: 1px solid #444; text-align: left; font-size: 14px; white-space: nowrap; /* Hindari teks wrap di sel tabel */ }
+        .transaction-table th { background-color: #3a3a3a; color: #00bcd4; font-weight: 700; }
+        .transaction-table tr:nth-child(even) { background-color: #333333; }
+        .transaction-table .amount-deposit { color: #4CAF50; font-weight: bold; }
+        .transaction-table .amount-withdrawal { color: #f44336; font-weight: bold; }
+        .transaction-table td:nth-child(5) { /* Kolom deskripsi */ white-space: normal; min-width: 200px; } /* Izinkan deskripsi wrap */
+        .pagination-controls { margin-top: 20px; text-align: center; display: flex; justify-content: center; align-items: center; gap: 10px;}
+
+
+        /* Modal & Animasi */
+        .modal { display: flex; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; padding: 20px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; }
+        .modal.open { opacity: 1; visibility: visible; transition-delay: 0s; }
+        .modal-content { position: relative; transform: translateY(-30px) scale(0.95); opacity: 0; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .modal.open .modal-content { transform: translateY(0) scale(1); opacity: 1; }
         .modal-content h2 { text-align: center; color: #f5f5f5; }
         .close-button { color: #777; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 15px; right: 20px; }
         .close-button:hover, .close-button:focus { color: #ccc; text-decoration: none; cursor: pointer; }
@@ -108,19 +134,25 @@
         .simple-nav { position: fixed; top: 0; left: 0; width: 100%; background: #2c2c2c; padding: 10px 20px; border-bottom: 1px solid #444; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 1001; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
         .simple-nav button { background: #4a4a4a; color: #e0e0e0; border: 1px solid #555; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background-color 0.2s ease; }
         .simple-nav button:hover { background: #5a5a5a; }
+        .simple-nav .nav-app-title { margin-right: auto; font-size: 18px; font-weight: 700; color: #00bcd4; }
 
         .page-section { display: none; }
-        .page-section.active { display: block; }
+        .page-section.active { display: block; animation: fadeInPage 0.5s ease-in-out; }
+        @keyframes fadeInPage { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="simple-nav">
-        <button id="navToRegisterButton" style="display: none;">Belum Punya Akun? Register</button>
-        <button id="navToLoginButton" style="display: none;">Sudah Punya Akun? Login</button>
+        <span class="nav-app-title">CelenganKu</span>
+        <button id="navDashboardButton" style="display: none;">Dashboard</button>
+        <button id="navHistoryButton" style="display: none;">Riwayat Transaksi</button>
+        <button id="navToRegisterButton" style="display: none;">Register</button>
+        <button id="navToLoginButton" style="display: none;">Login</button>
         <button id="navLogoutButton" style="display: none;">Logout</button>
     </div>
 
+<div class="page-container">
     <section id="loginPinPage" class="page-section">
         <div class="auth-container">
             <h1>Login dengan PIN</h1>
@@ -148,13 +180,34 @@
 
     <section id="dashboardPage" class="page-section">
         <div class="dashboard-container">
-            <div class="dashboard-header">
+            <div class="page-header">
                 <h2>Target Tabungan Saya</h2>
-                <span id="dashboardUserGreeting">Memuat data...</span>
                 <button id="btnOpenCreateTargetModal" class="btn btn-primary btn-sm"> <i class="fas fa-plus"></i> Buat Target Baru </button>
             </div>
-            <div class="target-list" id="targetListContainer"> <p>Data target akan muncul di sini.</p> </div>
+            <span id="dashboardUserGreeting">Memuat data...</span>
+            <div class="target-list" id="targetListContainer"> <p style="color: #aaa;">Data target akan muncul di sini.</p> </div>
             <p id="noTargetsText" style="text-align:center; margin-top:20px; display:none;">Anda belum memiliki target tabungan.</p>
+        </div>
+    </section>
+
+    <section id="historyPage" class="page-section">
+        <div class="history-container">
+            <div class="page-header"> <h2>Riwayat Transaksi</h2> </div>
+            <div class="transaction-table-container">
+                <table class="transaction-table">
+                    <thead>
+                        <tr> <th>Tanggal</th> <th>Target</th> <th>Jenis</th> <th>Jumlah</th> <th>Deskripsi/Alasan</th> </tr>
+                    </thead>
+                    <tbody id="transactionTableBody"></tbody>
+                </table>
+            </div>
+            <p id="loadingHistoryText" style="display:none;">Memuat riwayat...</p>
+            <p id="noHistoryText" style="display:none;">Belum ada riwayat transaksi.</p>
+            <div class="pagination-controls" id="historyPagination">
+                <button id="prevPageButton" class="btn btn-secondary btn-sm" disabled>&laquo; Sebelumnya</button>
+                <span id="currentPageInfo">Halaman 1 dari 1</span>
+                <button id="nextPageButton" class="btn btn-secondary btn-sm" disabled>Berikutnya &raquo;</button>
+            </div>
         </div>
     </section>
 
@@ -163,61 +216,24 @@
     </div>
 
     <div id="qrisAmountModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Deposit via QRIS ke "<span id="qrisAmountTargetName">Nama Target</span>"</h2>
-            <form id="qrisAmountForm">
-                <input type="hidden" id="qrisAmountTargetId">
-                <div class="form-group">
-                    <label for="qrisJumlahDeposit">Jumlah yang Akan Anda Bayarkan (Rp)</label>
-                    <input type="number" id="qrisJumlahDeposit" name="jumlah" step="1000" min="10000" required placeholder="Min. Rp 10.000">
-                </div>
-                <button type="submit" class="btn btn-success btn-full-width"> <i class="fas fa-qrcode"></i> Tampilkan QRIS </button>
-            </form>
-        </div>
+        <div class="modal-content"> <span class="close-button">&times;</span> <h2>Deposit via QRIS ke "<span id="qrisAmountTargetName">Nama Target</span>"</h2> <form id="qrisAmountForm"> <input type="hidden" id="qrisAmountTargetId"> <div class="form-group"> <label for="qrisJumlahDeposit">Jumlah yang Akan Anda Bayarkan (Rp)</label> <input type="number" id="qrisJumlahDeposit" name="jumlah" step="1000" min="10000" required placeholder="Min. Rp 10.000"> </div> <button type="submit" class="btn btn-success btn-full-width"> <i class="fas fa-qrcode"></i> Tampilkan QRIS </button> </form> </div>
     </div>
 
     <div id="qrisPaymentModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Scan QRIS Ini Untuk Pembayaran</h2>
-            <p style="text-align: center;">Target: <strong id="qrisPaymentTargetNameDisplay"></strong></p>
-            <p style="text-align: center;">Anda akan membayar sejumlah: <strong id="qrisPaymentAmountDisplay">Rp 0</strong></p>
-            <img id="staticQrisImage" src="" alt="QRIS Pembayaran Statis">
-            <p style="text-align:center; margin-top:10px; font-size:14px;">Pastikan Anda mentransfer sesuai jumlah di atas.</p>
-            <button id="btnConfirmQrisPaid" class="btn btn-primary btn-full-width" style="margin-top:20px;"> <i class="fas fa-check-circle"></i> Saya Sudah Bayar </button>
-            <input type="hidden" id="qrisConfirmTargetId">
-            <input type="hidden" id="qrisConfirmAmount">
-        </div>
+        <div class="modal-content"> <span class="close-button">&times;</span> <h2>Scan QRIS Ini Untuk Pembayaran</h2> <p style="text-align: center;">Target: <strong id="qrisPaymentTargetNameDisplay"></strong></p> <p style="text-align: center;">Anda akan membayar sejumlah: <strong id="qrisPaymentAmountDisplay">Rp 0</strong></p> <img id="staticQrisImage" src="" alt="QRIS Pembayaran Statis"> <p style="text-align:center; margin-top:10px; font-size:14px;">Pastikan Anda mentransfer sesuai jumlah di atas.</p> <button id="btnConfirmQrisPaid" class="btn btn-primary btn-full-width" style="margin-top:20px;"> <i class="fas fa-check-circle"></i> Saya Sudah Bayar </button> <input type="hidden" id="qrisConfirmTargetId"> <input type="hidden" id="qrisConfirmAmount"> </div>
     </div>
 
     <div id="withdrawalModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Tarik Dana dari "<span id="withdrawalTargetName">Nama Target</span>"</h2>
-            <p style="font-size: 14px; margin-bottom: 10px;">Saldo Tersedia: <strong id="withdrawalTargetBalance">Rp 0</strong></p>
-            <form id="withdrawalForm">
-                <input type="hidden" id="withdrawalTargetId">
-                <div class="form-group">
-                    <label for="withdrawalAmount">Jumlah Penarikan (Rp)</label>
-                    <input type="number" id="withdrawalAmount" name="amount" step="1000" min="1000" required placeholder="Min. Rp 1.000">
-                </div>
-                <div class="form-group">
-                    <label for="withdrawalReason">Alasan Penarikan (Wajib)</label>
-                    <textarea id="withdrawalReason" name="reason" rows="3" required placeholder="Contoh: Keperluan mendadak, beli barang X"></textarea>
-                </div>
-                <button type="submit" class="btn btn-danger btn-full-width"> <i class="fas fa-arrow-circle-down"></i> Konfirmasi Penarikan </button>
-            </form>
-        </div>
+        <div class="modal-content"> <span class="close-button">&times;</span> <h2>Tarik Dana dari "<span id="withdrawalTargetName">Nama Target</span>"</h2> <p style="font-size: 14px; margin-bottom: 10px;">Saldo Tersedia: <strong id="withdrawalTargetBalance">Rp 0</strong></p> <form id="withdrawalForm"> <input type="hidden" id="withdrawalTargetId"> <div class="form-group"> <label for="withdrawalAmount">Jumlah Penarikan (Rp)</label> <input type="number" id="withdrawalAmount" name="amount" step="1000" min="1000" required placeholder="Min. Rp 1.000"> </div> <div class="form-group"> <label for="withdrawalReason">Alasan Penarikan (Wajib)</label> <textarea id="withdrawalReason" name="reason" rows="3" required placeholder="Contoh: Keperluan mendadak, beli barang X"></textarea> </div> <button type="submit" class="btn btn-danger btn-full-width"> <i class="fas fa-arrow-circle-down"></i> Konfirmasi Penarikan </button> </form> </div>
     </div>
-
-
-    <script>
+</div> <script>
         // --- Global Variables & Configuration ---
         const API_BASE_URL = 'https://celengan.up.railway.app/api'; // GANTI DENGAN URL BACKEND ANDA YANG SUDAH DI-DEPLOY!
         let currentAuthToken = localStorage.getItem('celenganAuthToken');
         let currentUser = JSON.parse(localStorage.getItem('celenganCurrentUser'));
-        let STATIC_QRIS_IMAGE_URL = ""; // Akan diisi dari API Config saat startup
+        let STATIC_QRIS_IMAGE_URL = "";
+        let currentTransactionPage = 1;
+        const transactionsPerPage = 10;
 
         // --- Utility Functions ---
         async function apiCall(endpoint, method = 'GET', body = null, requiresAuth = true) {
@@ -262,14 +278,14 @@
 
         // --- Config Fetcher ---
         async function fetchAppConfig() {
-            const configData = await apiCall('/transactions/config', 'GET', null, false); // Endpoint config
+            const configData = await apiCall('/transactions/config', 'GET', null, false);
             if (configData && configData.staticQrisImageUrl) {
                 STATIC_QRIS_IMAGE_URL = configData.staticQrisImageUrl;
                 console.log("Static QRIS Image URL loaded:", STATIC_QRIS_IMAGE_URL);
             } else {
                 console.error("Gagal mengambil URL QRIS statis dari server atau URL tidak valid.");
                 showMessage("Konfigurasi pembayaran QRIS tidak lengkap. Fitur QRIS mungkin tidak berfungsi.", "warning");
-                // Tombol Bayar QRIS bisa disembunyikan jika config gagal, ditangani di renderTargetCard
+                document.querySelectorAll('.btn-qris-deposit').forEach(btn => btn.style.display = 'none');
             }
         }
 
@@ -361,15 +377,12 @@
             const terkumpulFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(target.jumlah_terkumpul);
             const targetFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(target.jumlah_target);
             const tanggalTargetFormatted = target.tanggal_target ? new Date(target.tanggal_target).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Tidak ada';
-            
             let qrisButtonHtml = '';
-            if (target.status === 'aktif' && STATIC_QRIS_IMAGE_URL && STATIC_QRIS_IMAGE_URL !== "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI") {
+            if (target.status === 'aktif' && STATIC_QRIS_IMAGE_URL && STATIC_QRIS_IMAGE_URL !== "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI" && STATIC_QRIS_IMAGE_URL.trim() !== "") {
                 qrisButtonHtml = `<button class="btn btn-success btn-sm btn-qris-deposit"><i class="fas fa-qrcode"></i> Bayar QRIS</button>`;
             }
             const withdrawButtonHtml = parseFloat(target.jumlah_terkumpul) > 0 ? `<button class="btn btn-warning btn-sm btn-withdraw"><i class="fas fa-hand-holding-usd"></i> Tarik Dana</button>` : '';
-
             card.innerHTML = `<h3>${target.nama_target}</h3> <div class="target-info">Target: <strong>${targetFormatted}</strong></div> <div class="target-info">Terkumpul: <strong>${terkumpulFormatted}</strong></div> <div class="target-info">Tanggal Target: <strong>${tanggalTargetFormatted}</strong></div> <div class="target-info">Status: <strong style="text-transform:capitalize;">${target.status}</strong></div> <div class="progress-bar-container"><div class="progress-bar" style="width: ${progress.toFixed(2)}%;"></div></div> <div class="progress-text">${progress.toFixed(1)}%</div> <div class="target-actions"> ${qrisButtonHtml} ${withdrawButtonHtml} <button class="btn btn-secondary btn-sm btn-edit"><i class="fas fa-edit"></i> Edit</button> <button class="btn btn-danger btn-sm btn-delete"><i class="fas fa-trash"></i> Hapus</button> </div>`;
-            
             const qrisDepositButton = card.querySelector('.btn-qris-deposit'); if (qrisDepositButton) { qrisDepositButton.addEventListener('click', () => openQrisAmountModal(target.id, target.nama_target)); }
             const withdrawButton = card.querySelector('.btn-withdraw'); if (withdrawButton) { withdrawButton.addEventListener('click', () => openWithdrawalModal(target.id, target.nama_target, target.jumlah_terkumpul)); }
             card.querySelector('.btn-edit').addEventListener('click', () => openEditTargetModal(target.id));
@@ -417,6 +430,9 @@
         // --- QRIS Payment Functions (Simplified Flow) ---
         function openQrisAmountModal(targetId, targetName) {
             if (!currentUser) { showMessage("Anda harus login untuk melakukan deposit.", "error"); return; }
+            if (!STATIC_QRIS_IMAGE_URL || STATIC_QRIS_IMAGE_URL === "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI" || STATIC_QRIS_IMAGE_URL.trim() === "") {
+                showMessage("Fitur pembayaran QRIS saat ini tidak tersedia atau belum dikonfigurasi. Harap hubungi admin.", "warning"); return;
+            }
             document.getElementById('qrisAmountTargetId').value = targetId;
             document.getElementById('qrisAmountTargetName').textContent = targetName;
             document.getElementById('qrisAmountForm').reset();
@@ -428,8 +444,8 @@
             const amount = document.getElementById('qrisJumlahDeposit').value;
             const targetName = document.getElementById('qrisAmountTargetName').textContent;
             if (!amount || parseFloat(amount) < 10000) { showMessage('Jumlah deposit minimal Rp 10.000.', 'error'); return; }
-            if (!STATIC_QRIS_IMAGE_URL || STATIC_QRIS_IMAGE_URL === "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI") {
-                showMessage("URL Gambar QRIS belum dikonfigurasi. Harap hubungi admin.", "error"); return;
+            if (!STATIC_QRIS_IMAGE_URL || STATIC_QRIS_IMAGE_URL === "URL_GAMBAR_QRIS_STATIS_ANDA_DISINI" || STATIC_QRIS_IMAGE_URL.trim() === "") {
+                showMessage("URL Gambar QRIS belum dikonfigurasi. Tidak dapat menampilkan QRIS.", "error"); return;
             }
             closeModal('qrisAmountModal');
             document.getElementById('qrisPaymentTargetNameDisplay').textContent = targetName;
@@ -464,7 +480,7 @@
             const amountInput = document.getElementById('withdrawalAmount');
             amountInput.max = currentBalance;
             amountInput.placeholder = `Maks Rp ${new Intl.NumberFormat('id-ID').format(currentBalance)}`;
-            document.getElementById('withdrawalForm').reset(); // Reset field lain tapi bukan yang baru di-set
+            document.getElementById('withdrawalForm').reset();
             document.getElementById('withdrawalAmount').value = '';
             document.getElementById('withdrawalReason').value = '';
             openModal('withdrawalModal');
@@ -477,7 +493,6 @@
             const reason = document.getElementById('withdrawalReason').value;
             if (!targetId || !amount || parseFloat(amount) <= 0) { showMessage("Jumlah penarikan harus positif.", "error"); return; }
             if (!reason || reason.trim() === "") { showMessage("Alasan penarikan wajib diisi.", "error"); return; }
-            // Validasi sederhana agar tidak menarik lebih dari saldo (backend juga validasi)
             const currentBalanceText = document.getElementById('withdrawalTargetBalance').textContent.replace(/[^0-9]/g, '');
             if (parseFloat(amount) > parseFloat(currentBalanceText)) {
                 showMessage("Jumlah penarikan tidak boleh melebihi saldo tersedia.", "error"); return;
@@ -495,14 +510,28 @@
         // --- Modal Control ---
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
-            if(modal) modal.style.display = 'flex';
+            if (modal) {
+                if (modalId === 'createTargetModal' && !document.getElementById('targetId').value) {
+                    document.getElementById('targetForm').reset();
+                    document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
+                }
+                modal.style.display = 'flex';
+                setTimeout(() => { modal.classList.add('open'); }, 10);
+            }
         }
         function closeModal(modalId) {
             const modal = document.getElementById(modalId);
-            if(modal) modal.style.display = 'none';
-            const form = modal ? modal.querySelector('form') : null;
-            if (form) { form.reset(); }
-            if (modalId === 'createTargetModal') { document.getElementById('targetId').value = ''; document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';}
+            if (modal) {
+                modal.classList.remove('open');
+                // Kita bisa delay display none agar animasi selesai, atau biarkan CSS visibility yang handle
+                // Untuk saat ini, CSS visibility yang di-delay sudah cukup
+                const form = modal.querySelector('form');
+                if (form) { form.reset(); }
+                if (modalId === 'createTargetModal') {
+                    document.getElementById('targetId').value = '';
+                    document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
+                }
+            }
         }
 
         // --- Page Navigation ---
@@ -510,20 +539,40 @@
             document.querySelectorAll('.page-section').forEach(section => section.classList.remove('active'));
             const pageToShow = document.getElementById(pageId);
             if (pageToShow) pageToShow.classList.add('active');
+            
+            const navDashboard = document.getElementById('navDashboardButton');
+            const navHistory = document.getElementById('navHistoryButton');
             const navLogout = document.getElementById('navLogoutButton');
             const navToRegister = document.getElementById('navToRegisterButton');
             const navToLogin = document.getElementById('navToLoginButton');
+
+            // Reset aksen tombol navigasi
+            if(navDashboard) navDashboard.style.backgroundColor = '#4a4a4a';
+            if(navHistory) navHistory.style.backgroundColor = '#4a4a4a';
+
             if (currentAuthToken && currentUser) {
+                if(navDashboard) navDashboard.style.display = 'inline-block';
+                if(navHistory) navHistory.style.display = 'inline-block';
                 if(navLogout) navLogout.style.display = 'inline-block';
                 if(navToRegister) navToRegister.style.display = 'none';
                 if(navToLogin) navToLogin.style.display = 'none';
-                const activeModal = document.querySelector('.modal[style*="display: flex"]');
-                if (pageId !== 'dashboardPage' && !activeModal && document.getElementById('dashboardPage')) {
-                    showPage('dashboardPage');
+                
+                const activeModal = document.querySelector('.modal.open');
+                if (!activeModal) {
+                    if (pageId === 'dashboardPage' && navDashboard) navDashboard.style.backgroundColor = '#00bcd4';
+                    else if (pageId === 'historyPage' && navHistory) navHistory.style.backgroundColor = '#00bcd4';
+                    else if (pageId !== 'loginPinPage' && pageId !== 'registerPinPage' && document.getElementById('dashboardPage')) {
+                        showPage('dashboardPage'); // Default ke dashboard jika sudah login & tidak ada modal aktif
+                    }
                 }
+                if (pageId === 'historyPage' && !activeModal) loadTransactionHistory(1);
+
+
             } else {
+                if(navDashboard) navDashboard.style.display = 'none';
+                if(navHistory) navHistory.style.display = 'none';
                 if(navLogout) navLogout.style.display = 'none';
-                const activeModal = document.querySelector('.modal[style*="display: flex"]');
+                const activeModal = document.querySelector('.modal.open');
                 if (activeModal) closeModal(activeModal.id);
                 if (pageId === 'loginPinPage') { if(navToRegister) navToRegister.style.display = 'inline-block'; if(navToLogin) navToLogin.style.display = 'none'; }
                 else if (pageId === 'registerPinPage') { if(navToRegister) navToRegister.style.display = 'none'; if(navToLogin) navToLogin.style.display = 'inline-block'; }
@@ -542,15 +591,25 @@
 
             document.querySelectorAll('.modal .close-button').forEach(button => button.addEventListener('click', () => closeModal(button.closest('.modal').id)));
             window.addEventListener('click', (event) => { document.querySelectorAll('.modal').forEach(modal => { if (event.target == modal) closeModal(modal.id); }); });
+            
             const navLogoutButton = document.getElementById('navLogoutButton'); if(navLogoutButton) navLogoutButton.addEventListener('click', () => handleLogout());
             const linkToRegister = document.getElementById('linkToRegisterPage'); if(linkToRegister) linkToRegister.addEventListener('click', (e) => { e.preventDefault(); showPage('registerPinPage'); });
             const linkToLogin = document.getElementById('linkToLoginPage'); if(linkToLogin) linkToLogin.addEventListener('click', (e) => { e.preventDefault(); showPage('loginPinPage'); });
             const navToRegisterButton = document.getElementById('navToRegisterButton'); if(navToRegisterButton) navToRegisterButton.addEventListener('click', () => showPage('registerPinPage'));
             const navToLoginButton = document.getElementById('navToLoginButton'); if(navToLoginButton) navToLoginButton.addEventListener('click', () => showPage('loginPinPage'));
+            
+            const navDashboardButton = document.getElementById('navDashboardButton'); if(navDashboardButton) navDashboardButton.addEventListener('click', () => showPage('dashboardPage'));
+            const navHistoryButton = document.getElementById('navHistoryButton'); if(navHistoryButton) navHistoryButton.addEventListener('click', () => showPage('historyPage'));
+
+            const prevPageBtn = document.getElementById('prevPageButton'); if(prevPageBtn) prevPageBtn.addEventListener('click', () => { if (currentTransactionPage > 1) loadTransactionHistory(currentTransactionPage - 1); });
+            const nextPageBtn = document.getElementById('nextPageButton'); if(nextPageBtn) nextPageBtn.addEventListener('click', () => { loadTransactionHistory(currentTransactionPage + 1); });
+
+
             const btnOpenCreateTargetModal = document.getElementById('btnOpenCreateTargetModal');
             if(btnOpenCreateTargetModal) {
                 btnOpenCreateTargetModal.addEventListener('click', () => {
                     if (!currentAuthToken || !currentUser) { showMessage("Anda harus login untuk membuat target.", "error"); showPage('loginPinPage'); return; }
+                    // Persiapan modal untuk "Buat Baru" secara eksplisit
                     document.getElementById('targetForm').reset();
                     document.getElementById('targetId').value = '';
                     document.getElementById('modalTitle').textContent = 'Buat Target Tabungan Baru';
@@ -568,3 +627,4 @@
     </script>
 </body>
 </html>
+
