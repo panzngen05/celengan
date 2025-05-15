@@ -25,24 +25,26 @@ async function confirmTargetDeposit(userId, targetId, amount, description, payme
         if (newJumlahTerkumpul >= parseFloat(target.jumlah_target) && target.status !== 'tercapai') {
             newStatus = 'tercapai';
         } else if (target.status === 'tercapai' && newJumlahTerkumpul < parseFloat(target.jumlah_target)){
-             newStatus = 'aktif'; // Jika jadi di bawah target lagi (misal setelah penarikan, lalu deposit kecil)
+             newStatus = 'aktif'; 
         } else if (target.status !== 'tercapai' && newJumlahTerkumpul < parseFloat(target.jumlah_target)) {
-            newStatus = 'aktif'; // Pastikan tetap aktif jika belum tercapai
+            newStatus = 'aktif'; 
         }
-
 
         await connection.query('UPDATE targets SET jumlah_terkumpul = ?, status = ? WHERE id = ?', [newJumlahTerkumpul, newStatus, targetId]);
         
         const [result] = await connection.query(
             'INSERT INTO transactions (target_id, user_id, jenis_transaksi, jumlah, deskripsi, payment_gateway_ref) VALUES (?, ?, ?, ?, ?, ?)',
-            [targetId, userId, 'DEPOSIT', parseFloat(amount), description, paymentRef]
+            [targetId, userId, 'DEPOSIT', parseFloat(amount), description, paymentRef] // Nilai ENUM: 'DEPOSIT'
         );
         await connection.commit();
         return { message: 'Deposit berhasil dikonfirmasi dan dicatat.', transaction_id: result.insertId, target_id: targetId, new_jumlah_terkumpul: newJumlahTerkumpul, target_status: newStatus };
     } catch (error) {
         await connection.rollback();
         console.error("Error dalam proses konfirmasi deposit (paymentService):", error.message);
-        throw new Error(error.message || 'Gagal mengkonfirmasi deposit ke target.');
+        // Sertakan error asli untuk debugging lebih lanjut jika perlu
+        const detailError = new Error(error.message || 'Gagal mengkonfirmasi deposit ke target.');
+        detailError.originalError = error; // Menyimpan error asli
+        throw detailError;
     } finally {
         if (connection) connection.release();
     }
@@ -93,14 +95,16 @@ async function processWithdrawal(userId, targetId, amount, reason) {
         const withdrawalRef = `WITHDRAW-${userId}-${targetId}-${Date.now()}`;
         const [result] = await connection.query(
             'INSERT INTO transactions (target_id, user_id, jenis_transaksi, jumlah, deskripsi, payment_gateway_ref) VALUES (?, ?, ?, ?, ?, ?)',
-            [targetId, userId, 'WITHDRAWAL', parseFloat(amount), reason, withdrawalRef]
+            [targetId, userId, 'WITHDRAWAL', parseFloat(amount), reason, withdrawalRef] // Nilai ENUM: 'WITHDRAWAL'
         );
         await connection.commit();
         return { message: 'Penarikan berhasil dicatat.', transaction_id: result.insertId, target_id: targetId, new_jumlah_terkumpul: newJumlahTerkumpul, target_status: newStatus };
     } catch (error) {
         await connection.rollback();
         console.error("Error dalam proses penarikan (paymentService):", error.message);
-        throw new Error(error.message || 'Gagal memproses penarikan dana.');
+        const detailError = new Error(error.message || 'Gagal memproses penarikan dana.');
+        detailError.originalError = error; // Menyimpan error asli
+        throw detailError;
     } finally {
         if (connection) connection.release();
     }
