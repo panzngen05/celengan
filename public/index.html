@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 <style>
-    /* Reset CSS Dasar & Tema Gelap */
+    /* Reset CSS Dasar & Tema Gelap Utama */
     * { 
         margin: 0; 
         padding: 0; 
@@ -24,9 +24,9 @@
         background-color: #1a1a1a; /* Latar belakang gelap utama */
         color: #e0e0e0;       /* Teks terang utama */
         line-height: 1.6;
-        padding-top: 70px; /* Disesuaikan berdasarkan tinggi final navigasi Anda */
+        padding-top: 70px; /* Disesuaikan berdasarkan tinggi final navigasi Anda (mobile-first) */
         padding-bottom: 20px;
-        overflow-x: hidden; /* Mencegah scroll horizontal di level body */
+        overflow-x: hidden; /* Mencegah scroll horizontal yang tidak diinginkan di level body */
     }
 
     .page-container { 
@@ -37,9 +37,13 @@
         padding: 10px; /* Padding default untuk mobile */
     }
 
-    .auth-container, .dashboard-container, .history-container, .modal-content {
+    /* Kontainer Utama untuk Konten (Auth, Dashboard, History) & Modal Content */
+    .auth-container, 
+    .dashboard-container, 
+    .history-container, 
+    .modal-content { /* .modal-content styling dipindah ke bagian modal untuk spesifisitas */
         background-color: #2c2c2c; 
-        padding: 20px; /* Padding default, akan disesuaikan media query */
+        padding: 20px; /* Padding default untuk mobile */
         border-radius: 12px;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); 
         width: 100%;
@@ -48,6 +52,7 @@
     .auth-container { max-width: 450px; margin: 20px auto; }
     .dashboard-container, .history-container { max-width: 900px; margin: 20px auto; }
 
+    /* Headings */
     h1, h2, h3 { color: #ffffff; margin-bottom: 20px; } 
     h1 { font-size: 26px; font-weight: 800; text-align: center; }
     h2 { font-size: 22px; font-weight: 700; }
@@ -90,40 +95,33 @@
     .btn:disabled, .btn[disabled] { background-color: #424242 !important; color: #757575 !important; border-color: #424242 !important; box-shadow: none !important; cursor: not-allowed !important; transform: none !important; }
     .btn-secondary:disabled, .btn-secondary[disabled] { background-color: transparent !important; color: #757575 !important; border-color: #757575 !important; }
 
-    /* Dashboard & History */
+    /* Header Halaman (Dashboard & History) */
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
     .page-header h2 { text-align: left; margin-bottom: 0; color: #f5f5f5; flex-grow: 1; }
     #dashboardUserGreeting { font-size: 15px; font-weight: normal; color: #b0b0b0; width: 100%; margin-bottom: 15px; }
+
+    /* Daftar Target (Dashboard) */
     .target-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; }
     .target-card { background-color: #3a3a3a; padding: 15px; border-radius: 10px; border: 1px solid #555; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
     .target-info { font-size: 13px; color: #b0b0b0; margin-bottom: 6px; } .target-info strong { color: #e0e0e0; }
     .progress-bar-container { width: 100%; background-color: #555; border-radius: 25px; height: 10px; margin-top: 8px; margin-bottom: 4px; overflow: hidden; }
     .progress-bar { background-color: #00bcd4; height: 100%; border-radius: 25px; width: 0%; transition: width 0.5s ease-in-out; }
     .progress-text { font-size: 11px; color: #a0a0a0; text-align: right; margin-bottom: 12px; }
-    .target-actions {
-        margin-top: auto; 
-        padding-top: 12px; 
-        display: flex;
-        flex-wrap: wrap; 
-        gap: 8px; /* Spasi antar tombol di kartu target */
-    }
+    .target-actions { margin-top: auto; padding-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; /* Spasi antar tombol di kartu target */ }
     
     /* Riwayat Transaksi */
-    .history-container {
-        padding: 15px;
-        width: 100%;
-    }
+    .history-container { padding: 15px; width: 100%; }
     .transaction-table-container {
-        overflow-x: auto;          /* Scroll horizontal untuk tabel */
+        overflow-x: auto;         
         width: 100%;              
-        -webkit-overflow-scrolling: touch; /* Scroll halus di iOS */
+        -webkit-overflow-scrolling: touch; 
         border: 1px solid #444;   
         border-radius: 6px;       
         margin-top: 20px;
     }
     .transaction-table {
         width: 100%;              
-        min-width: 700px;         /* Lebar minimum tabel, sesuaikan jika perlu */
+        min-width: 700px; /* Sesuaikan agar kolom tidak terlalu sempit, memaksa scroll */        
         border-collapse: collapse;
     }
     .transaction-table th,
@@ -142,9 +140,7 @@
         top: 0;                   
         z-index: 1;               
     }
-    .transaction-table tr:nth-child(even) {
-        background-color: #333333; 
-    }
+    .transaction-table tr:nth-child(even) { background-color: #333333; }
     .transaction-table .amount-deposit { color: #81c784; font-weight: bold; }
     .transaction-table .amount-withdrawal { color: #e57373; font-weight: bold; }
     .transaction-table td:nth-child(5) { /* Kolom Deskripsi/Alasan */
@@ -156,11 +152,16 @@
     .pagination-controls { margin-top: 20px; text-align: center; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
     #loadingHistoryText, #noHistoryText { text-align: center; margin-top: 20px; color: #aaa;}
 
-
     /* Modal & Animasi */
     .modal { display: flex; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; padding: 10px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; }
     .modal.open { opacity: 1; visibility: visible; transition-delay: 0s; }
-    .modal-content { position: relative; transform: translateY(-30px) scale(0.95); opacity: 0; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); max-width: 95%; }
+    .modal-content { /* Styling dasar modal content sudah ada di atas (.auth-container, .dashboard-container, etc.) */
+        position: relative; 
+        transform: translateY(-30px) scale(0.95); 
+        opacity: 0; 
+        transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+        max-width: 95%; /* Agar tidak terlalu lebar di mobile */
+    }
     .modal.open .modal-content { transform: translateY(0) scale(1); opacity: 1; }
     .modal-content h2 { text-align: center; color: #f5f5f5; font-size: 20px; }
     .close-button { color: #777; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; }
@@ -171,10 +172,11 @@
     #qrisPaymentModal p { color: #b0b0b0; } #qrisPaymentModal strong { color: #e0e0e0; }
 
     /* Custom Alert Modal Styling */
-    #customAlertModal .modal-content { max-width: 360px; padding: 20px; }
+    #customAlertModal .modal-content { max-width: 360px; padding: 20px; } /* Overwrite padding jika perlu */
     #customAlertModal h3 { margin-top: 0; font-size: 18px; display: flex; align-items: center; }
     #customAlertIcon { margin-right: 10px; font-size: 22px; }
-    #customAlertModal .modal-content.alert-modal-success #customAlertTitle { color: #4CAF50; } /* Warna judul diubah di sini */
+    /* Styling warna judul custom alert berdasarkan kelas yang ditambahkan JS ke .modal-content */
+    #customAlertModal .modal-content.alert-modal-success #customAlertTitle { color: #4CAF50; } 
     #customAlertModal .modal-content.alert-modal-error #customAlertTitle { color: #f44336; }
     #customAlertModal .modal-content.alert-modal-info #customAlertTitle { color: #00bcd4; }
     #customAlertMessage { margin-top: 12px; margin-bottom: 20px; font-size: 15px; color: #c0c0c0; text-align: center; }
@@ -186,13 +188,14 @@
     .simple-nav button:hover { background: #5a5a5a; }
     .simple-nav .nav-app-title { margin-right: auto; font-size: 16px; font-weight: 700; color: #00bcd4; }
 
+    /* Animasi Halaman */
     .page-section { display: none; }
     .page-section.active { display: block; animation: fadeInPage 0.4s ease-in-out; }
     @keyframes fadeInPage { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Media Queries untuk Desktop (Layar Lebih Besar) */
     @media (min-width: 768px) {
-        body { padding-top: 80px; } /* Kembalikan padding jika nav lebih tinggi di desktop */
+        body { padding-top: 80px; } 
         .page-container { padding: 20px; }
         .auth-container, .dashboard-container, .history-container, .modal-content {
              padding: 30px 40px; 
