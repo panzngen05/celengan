@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
 <style>
     /* Reset CSS Dasar & Tema Gelap Utama */
     * { 
@@ -41,9 +40,9 @@
     .auth-container, 
     .dashboard-container, 
     .history-container, 
-    .modal-content { /* .modal-content styling dipindah ke bagian modal untuk spesifisitas */
+    .modal-content { 
         background-color: #2c2c2c; 
-        padding: 20px; /* Padding default untuk mobile */
+        padding: 20px; 
         border-radius: 12px;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); 
         width: 100%;
@@ -107,7 +106,7 @@
     .progress-bar-container { width: 100%; background-color: #555; border-radius: 25px; height: 10px; margin-top: 8px; margin-bottom: 4px; overflow: hidden; }
     .progress-bar { background-color: #00bcd4; height: 100%; border-radius: 25px; width: 0%; transition: width 0.5s ease-in-out; }
     .progress-text { font-size: 11px; color: #a0a0a0; text-align: right; margin-bottom: 12px; }
-    .target-actions { margin-top: auto; padding-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; /* Spasi antar tombol di kartu target */ }
+    .target-actions { margin-top: auto; padding-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
     
     /* Riwayat Transaksi */
     .history-container { padding: 15px; width: 100%; }
@@ -121,7 +120,7 @@
     }
     .transaction-table {
         width: 100%;              
-        min-width: 700px; /* Sesuaikan agar kolom tidak terlalu sempit, memaksa scroll */        
+        min-width: 700px; /* Pastikan nilai ini cukup besar agar kolom tidak terlalu sempit. Anda bisa coba naikkan ke 800px atau 900px jika perlu. */        
         border-collapse: collapse;
     }
     .transaction-table th,
@@ -137,17 +136,17 @@
         color: #00bcd4;           
         font-weight: 700;
         position: sticky;         
-        top: 0;                   
-        z-index: 1;               
+        top: 0;                   /* Header tabel akan menempel saat scroll vertikal */
+        z-index: 1;               /* Pastikan header di atas konten lain saat scroll */
     }
     .transaction-table tr:nth-child(even) { background-color: #333333; }
     .transaction-table .amount-deposit { color: #81c784; font-weight: bold; }
     .transaction-table .amount-withdrawal { color: #e57373; font-weight: bold; }
-    .transaction-table td:nth-child(5) { /* Kolom Deskripsi/Alasan */
-        white-space: normal;      
-        min-width: 150px;         
-        max-width: 250px;         
-        word-break: break-word;   
+    .transaction-table td:nth-child(5) { /* Kolom Deskripsi/Alasan (Asumsi kolom ke-5) */
+        white-space: normal;      /* Izinkan teks wrap */
+        min-width: 150px;         /* Lebar minimum agar tidak terlalu sempit */
+        max-width: 250px;         /* Batasi agar tidak terlalu lebar juga */
+        word-break: break-word;   /* Patahkan kata jika perlu */
     } 
     .pagination-controls { margin-top: 20px; text-align: center; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
     #loadingHistoryText, #noHistoryText { text-align: center; margin-top: 20px; color: #aaa;}
@@ -155,12 +154,13 @@
     /* Modal & Animasi */
     .modal { display: flex; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; padding: 10px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; }
     .modal.open { opacity: 1; visibility: visible; transition-delay: 0s; }
-    .modal-content { /* Styling dasar modal content sudah ada di atas (.auth-container, .dashboard-container, etc.) */
+    .modal-content { 
         position: relative; 
         transform: translateY(-30px) scale(0.95); 
         opacity: 0; 
         transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
-        max-width: 95%; /* Agar tidak terlalu lebar di mobile */
+        max-width: 95%; /* Batasi lebar modal di mobile agar tidak full screen dan ada padding */
+        /* Styling .modal-content dasar (background, padding, dll) sudah diatur di atas bersama .auth-container */
     }
     .modal.open .modal-content { transform: translateY(0) scale(1); opacity: 1; }
     .modal-content h2 { text-align: center; color: #f5f5f5; font-size: 20px; }
@@ -172,10 +172,9 @@
     #qrisPaymentModal p { color: #b0b0b0; } #qrisPaymentModal strong { color: #e0e0e0; }
 
     /* Custom Alert Modal Styling */
-    #customAlertModal .modal-content { max-width: 360px; padding: 20px; } /* Overwrite padding jika perlu */
+    #customAlertModal .modal-content { max-width: 360px; padding: 20px; } 
     #customAlertModal h3 { margin-top: 0; font-size: 18px; display: flex; align-items: center; }
     #customAlertIcon { margin-right: 10px; font-size: 22px; }
-    /* Styling warna judul custom alert berdasarkan kelas yang ditambahkan JS ke .modal-content */
     #customAlertModal .modal-content.alert-modal-success #customAlertTitle { color: #4CAF50; } 
     #customAlertModal .modal-content.alert-modal-error #customAlertTitle { color: #f44336; }
     #customAlertModal .modal-content.alert-modal-info #customAlertTitle { color: #00bcd4; }
@@ -203,7 +202,7 @@
         .auth-container { max-width: 450px; }
         .dashboard-container, .history-container { max-width: 900px; }
         #customAlertModal .modal-content { max-width: 400px; }
-        .modal-content { max-width: 500px; } 
+        .modal-content { max-width: 500px; } /* Ukuran modal default di desktop */
 
         h1 { font-size: 28px; }
         h2 { font-size: 24px; }
